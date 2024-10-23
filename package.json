@@ -1,0 +1,82 @@
+{
+  "name": "vscode-riotjs",
+  "displayName": "RiotJS Support",
+  "description": "RiotJS syntax highlighting and autocompletion for VSCode",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "riot",
+        "aliases": [
+          "RiotJS",
+          "riot"
+        ],
+        "extensions": [
+          ".riot"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "riot",
+        "scopeName": "source.riot",
+        "path": "./syntaxes/riot.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "riotjs.manualAutoClose",
+        "title": "RiotJS: Manually Insert Closing Tag"
+      },
+      {
+        "command": "type",
+        "title": "Type",
+        "enablement": "editorTextFocus && editorLangId == riot"
+      },
+      {
+        "command": "riotjs.triggerCompletion",
+        "title": "Riot: Trigger Completion"
+      }
+    ],
+    "configuration": {
+      "title": "RiotJS",
+      "properties": {
+        "riotjs.enableAutoClosing": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable auto-closing tags for RiotJS files"
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[riot]": {
+        "editor.formatOnType": true
+      }
+    }
+  },
+  "scripts": {
+    "package": "npx --yes @vscode/vsce package --allow-missing-repository --skip-license"
+  },
+  "dependencies": {
+    "typescript": "^5.6.3",
+    "vscode-css-languageserver-bin": "^1.4.0",
+    "vscode-html-languageservice": "^5.3.1",
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-uri": "^3.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.7",
+    "@types/vscode": "^1.94.0",
+    "@vscode/vsce": "^3.2.0"
+  }
+}
