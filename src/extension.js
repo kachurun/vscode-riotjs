@@ -1,9 +1,6 @@
 const vscode = require('vscode');
 const { LanguageClient, TransportKind } = require('vscode-languageclient/node');
 const path = require('path');
-const ts = require('typescript');
-const url = require('url');
-const fs = require('fs');
 
 const TypeScriptLanguageService = require("./TypeScriptLanguageService").default;
 
