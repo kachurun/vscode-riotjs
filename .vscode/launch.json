@@ -16,6 +16,17 @@
       "port": 6009,
       "restart": true,
       "outFiles": ["${workspaceRoot}/src/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Current File with tsx",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "tsx"],
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ],
   "compounds": [

@@ -92,11 +92,8 @@ function isInsideExpression(document, position) {
 }
 
 connection.onCompletion(async (textDocumentPosition) => {
-  connection.console.log('Received completion request: ' + JSON.stringify(textDocumentPosition, null, 2));
-
   const document = documents.get(textDocumentPosition.textDocument.uri);
   if (!document) {
-    connection.console.log('Document not found');
     return [];
   }
 
@@ -105,37 +102,38 @@ connection.onCompletion(async (textDocumentPosition) => {
       start: { line: 0, character: 0 },
       end: textDocumentPosition.position
     });
-    connection.console.log('Text before cursor: ' + JSON.stringify(textBeforeCursor));
 
-    if (isInsideScript(document, textDocumentPosition.position) || isInsideExpression(document, textDocumentPosition.position)) {
-      connection.console.log('Inside script or expression');
-
+    if (isInsideExpression(document, textDocumentPosition.position)) {
+      return {
+        isIncomplete: false,
+        items: []
+      };
+    } else if (
+      isInsideScript(document, textDocumentPosition.position)
+    ) {
       const result = await connection.sendRequest('custom/jsCompletion', textDocumentPosition);
       
       if (!result || !result.items || !Array.isArray(result.items)) {
         connection.console.error('Invalid jsCompletion result');
-        return [];
+        return {
+          isIncomplete: false,
+          items: []
+        };
       }
 
       const { items, scriptOffset } = result;
-      
-      connection.console.log('Script offset: ' + JSON.stringify(scriptOffset, null, 2));
-      
-      const mappedItems = items.map((item, index) => {
-        if (index < 5) {
-          connection.console.log('Mapping item: ' + JSON.stringify(item, null, 2));
-        }
+
+      const mappedItems = items.map(item => {
         const kind = mapCompletionItemKind(item.kind);
         // const textEdit = mapTextEdit(item.textEdit, scriptOffset);
         
         const completionItem = CompletionItem.create(item.name);
         completionItem.kind = kind;
         completionItem.sortText = item.sortText;
+        completionItem.insertText = item.insertText;
 
         return completionItem;
       });
-
-      connection.console.log('First 5 items: ' + JSON.stringify(mappedItems.slice(0, 5), null, 2));
 
       return {
         isIncomplete: false,

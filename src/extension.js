@@ -2,12 +2,17 @@ const vscode = require('vscode');
 const { LanguageClient, TransportKind } = require('vscode-languageclient/node');
 const path = require('path');
 const ts = require('typescript');
+const url = require('url');
+const fs = require('fs');
+
+const TypeScriptLanguageService = require("./TypeScriptLanguageService").default;
 
 let riotClient;
 let cssClient;
 let outputChannel;
+let tsLanguageService;
 
-function extractScriptContent(document, position) {
+function extractScriptContent(document) {
   const text = document.getText();
   const scriptMatch = text.match(/<script[^>]*>([\s\S]*?)<\/script>/);
   if (scriptMatch) {
@@ -48,106 +53,39 @@ function activateCSSClient(context) {
 
 function activateJSClient(context, riotClient) {
   riotClient.onRequest('custom/jsCompletion', async (params) => {
-    outputChannel.appendLine('Received jsCompletion request: ' + JSON.stringify(params, null, 2));
-
     const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(params.textDocument.uri));
-    const position = new vscode.Position(params.position.line, params.position.character);
-
-    const { content, offset } = extractScriptContent(document, position);
+    
+    const { content, offset } = extractScriptContent(document);
     
     if (!content) {
       outputChannel.appendLine('No script content found');
       return { items: [], scriptOffset: { line: 0, character: 0 } };
     }
+    
+    const position = new vscode.Position(params.position.line, params.position.character);
+    const adjustedRequestedOffset = document.offsetAt(position) - offset;
 
-    const scriptStartPosition = document.positionAt(offset);
-    const adjustedPosition = new vscode.Position(
-      position.line - scriptStartPosition.line,
-      position.line === scriptStartPosition.line 
-        ? position.character - scriptStartPosition.character 
-        : position.character
-    );
-
-    outputChannel.appendLine('Script start position: ' + JSON.stringify(scriptStartPosition));
-    outputChannel.appendLine('Adjusted position: ' + JSON.stringify(adjustedPosition));
+    const url = new URL(params.textDocument.uri);
+    const filePath = decodeURIComponent(url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname);
 
     try {
-      const completionItems = getTypeScriptCompletions(content, adjustedPosition);
+      tsLanguageService.updateDocument(filePath, content);
 
-      outputChannel.appendLine(`Received ${completionItems.length} completion items from TS language service`);
-
-      // Log more details about the completion items
-      outputChannel.appendLine('Completion items details:');
-      completionItems.slice(0, 5).forEach((item, index) => {
-        outputChannel.appendLine(`Item ${index}:`);
-        outputChannel.appendLine(`  Label: ${item.label}`);
-        outputChannel.appendLine(`  Kind: ${item.kind}`);
-        outputChannel.appendLine(`  Detail: ${item.detail}`);
-        outputChannel.appendLine(`  InsertText: ${item.insertText}`);
-        if (item.textEdit) {
-          outputChannel.appendLine(`  TextEdit: ${JSON.stringify(item.textEdit)}`);
-        }
-        outputChannel.appendLine('');
-      });
+      const completionItems = tsLanguageService.getCompletionsAtPosition(filePath, adjustedRequestedOffset);
 
       // Send the completion list along with the script offset information
       const result = {
         items: completionItems,
-        scriptOffset: {
-          line: scriptStartPosition.line,
-          character: scriptStartPosition.character
-        }
+        scriptOffset: offset
       };
 
-      outputChannel.appendLine(`Returning ${result.items.length} items to language server`);
-      outputChannel.appendLine(`First item: ${JSON.stringify(result.items[0], null, 2)}`);
       return result;
     } catch (error) {
       outputChannel.appendLine('Error in jsCompletion: ' + error.toString());
+      outputChannel.appendLine('Error stack: ' + error.stack);
       return { items: [], scriptOffset: { line: 0, character: 0 } };
     }
   });
-}
-
-function getTypeScriptCompletions(content, position) {
-  const fileName = 'virtual.ts';
-  const compilerOptions = {
-    target: ts.ScriptTarget.Latest,
-    module: ts.ModuleKind.CommonJS,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
-    strict: true,
-  };
-
-  const host = {
-    getScriptFileNames: () => [fileName],
-    getScriptVersion: () => '0',
-    getScriptSnapshot: (name) => {
-      if (name === fileName) {
-        return ts.ScriptSnapshot.fromString(content);
-      }
-      return undefined;
-    },
-    getCurrentDirectory: () => process.cwd(),
-    getCompilationSettings: () => compilerOptions,
-    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
-    fileExists: () => true,
-    readFile: () => '',
-    readDirectory: () => [],
-    directoryExists: () => true,
-    getDirectories: () => [],
-  };
-
-  const languageService = ts.createLanguageService(host);
-
-  const offset = ts.getPositionOfLineAndCharacter(
-    ts.createSourceFile(fileName, content, ts.ScriptTarget.Latest),
-    position.line,
-    position.character
-  );
-
-  const completions = languageService.getCompletionsAtPosition(fileName, offset, undefined);
-
-  return completions.entries;
 }
 
 function activateAutoClosing(context) {
@@ -193,8 +131,6 @@ async function activate(context) {
     context.subscriptions.push(outputChannel);
   }
 
-  outputChannel.appendLine('Activating Riot Extension');
-
   const serverModule = context.asAbsolutePath(path.join('src', 'server.js'));
   const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 
@@ -209,14 +145,14 @@ async function activate(context) {
 
   const clientOptions = {
     documentSelector: [{ scheme: 'file', language: 'riot' }],
-    middleware: {
-      provideCompletionItem: async (document, position, context, token, next) => {
-        outputChannel.appendLine('Middleware: provideCompletionItem called');
-        const result = await next(document, position, context, token);
-        outputChannel.appendLine(`Middleware: Received ${result?.items?.length || 0} completion items`);
-        return result;
-      }
-    }
+    // middleware: {
+    //   provideCompletionItem: async (document, position, context, token, next) => {
+    //     outputChannel.appendLine('Middleware: provideCompletionItem called');
+    //     const result = await next(document, position, context, token);
+    //     outputChannel.appendLine(`Middleware: Received ${result?.items?.length || 0} completion items`);
+    //     return result;
+    //   }
+    // }
   };
 
   if (!riotClient) {
@@ -228,40 +164,32 @@ async function activate(context) {
     );
 
     await riotClient.start();
-    outputChannel.appendLine('Riot Extension client started');
 
     activateJSClient(context, riotClient);
     activateCSSClient(context);
     activateAutoClosing(context);
-
-    let disposable = vscode.commands.registerCommand('riotjs.triggerCompletion', async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        return;
-      }
-      const document = editor.document;
-      const position = editor.selection.active;
-
-      const completionList = await vscode.commands.executeCommand(
-        'vscode.executeCompletionItemProvider',
-        document.uri,
-        position
-      );
-
-      outputChannel.appendLine(`Manual trigger received ${completionList?.items?.length || 0} completion items, ${ typeof completionList }`);
-      outputChannel.appendLine(`First item: ${JSON.stringify(completionList?.items?.[0] || null, null, 2)}`);
-    });
-
-    context.subscriptions.push(disposable);
   } else {
     outputChannel.appendLine('Riot Extension client already exists');
   }
+
+  // Initialize the TypeScript language service
+  tsLanguageService = new TypeScriptLanguageService();
 }
 
 function deactivate() {
   const promises = [];
   if (riotClient) promises.push(riotClient.stop());
   if (cssClient) promises.push(cssClient.stop());
+  
+  // Dispose of the TypeScript language service
+  if (tsLanguageService) {
+    tsLanguageService.dispose();
+    tsLanguageService = null;
+  }
+
+  // Clear virtual files
+  virtualFiles.clear();
+
   return Promise.all(promises);
 }
 

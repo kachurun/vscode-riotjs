@@ -33,17 +33,9 @@
     ],
     "commands": [
       {
-        "command": "riotjs.manualAutoClose",
-        "title": "RiotJS: Manually Insert Closing Tag"
-      },
-      {
         "command": "type",
         "title": "Type",
         "enablement": "editorTextFocus && editorLangId == riot"
-      },
-      {
-        "command": "riotjs.triggerCompletion",
-        "title": "Riot: Trigger Completion"
       }
     ],
     "configuration": {
