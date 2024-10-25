@@ -27,6 +27,7 @@ let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params) => {
+  connection.console.log("Initializing Language Server");
   const capabilities = params.capabilities;
 
   hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
@@ -103,13 +104,9 @@ connection.onCompletion(async (textDocumentPosition) => {
       end: textDocumentPosition.position
     });
 
-    if (isInsideExpression(document, textDocumentPosition.position)) {
-      return {
-        isIncomplete: false,
-        items: []
-      };
-    } else if (
+    if (
       isInsideScript(document, textDocumentPosition.position)
+      // || isInsideExpression(document, textDocumentPosition.position)
     ) {
       const result = await connection.sendRequest('custom/jsCompletion', textDocumentPosition);
       
