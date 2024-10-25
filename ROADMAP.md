@@ -1,0 +1,6 @@
+- add support for expression suggestions
+- add diagnostic with error underlying
+- add css suggestions
+- add inline style css suggestions
+- add differentiation between &lt;script&gt; and &lt;script lang="ts"&gt; as riot.js documentation states
+- add tailwind class suggestions?
