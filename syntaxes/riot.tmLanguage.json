@@ -3,11 +3,12 @@
   "name": "RiotJS",
   "scopeName": "source.riot",
   "patterns": [
-    { "include": "#root-component" }
+    { "include": "#root-component" },
+    { "include": "#invalid-content" }
   ],
   "repository": {
     "root-component": {
-      "begin": "^\\s*(<)([a-zA-Z][a-zA-Z0-9:-]*)",
+      "begin": "(<)([a-zA-Z][a-zA-Z0-9:-]*)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.html" }
@@ -37,6 +38,10 @@
       ],
       "name": "meta.component.riot",
       "contentName": "meta.component.content.riot"
+    },
+    "invalid-content": {
+      "match": ".",
+      "name": "invalid.illegal.outside-component.riot"
     },
     "tags": {
       "patterns": [
