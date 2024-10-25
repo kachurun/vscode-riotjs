@@ -170,6 +170,7 @@
         "0": { "name": "punctuation.definition.string.end.html" }
       },
       "patterns": [
+        { "include": "#escaped-curly-braces" },
         { "include": "#inner-text-expression" }
       ]
     },
@@ -184,17 +185,18 @@
         "0": { "name": "punctuation.definition.string.end.html" }
       },
       "patterns": [
+        { "include": "#escaped-curly-braces" },
         { "include": "#inner-text-expression" }
       ]
     },
     "inner-text-expression": {
-      "begin": "({)",
+      "begin": "(?<!\\\\){",
       "beginCaptures": {
-        "1": { "name": "punctuation.section.embedded.begin.riot" }
+        "0": { "name": "punctuation.section.embedded.begin.riot" }
       },
-      "end": "(})",
+      "end": "}",
       "endCaptures": {
-        "1": { "name": "punctuation.section.embedded.end.riot" }
+        "0": { "name": "punctuation.section.embedded.end.riot" }
       },
       "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
       "patterns": [
@@ -222,6 +224,10 @@
         { "include": "source.css#property-names" },
         { "include": "source.css#property-values" }
       ]
+    },
+    "escaped-curly-braces": {
+      "match": "\\\\{",
+      "name": "constant.character.escape.riot"
     }
   }
 }
