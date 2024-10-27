@@ -39,14 +39,6 @@ async function build() {
             fs.mkdirSync("build");
         }
 
-        // Copy package.json to build folder with modified main
-        const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
-        packageJson.main = "./extension.js";
-        fs.writeFileSync(
-            path.join("build", "package.json"),
-            JSON.stringify(packageJson, null, 2)
-        );
-
         // Bundle extension
         await esbuild.build({
             ...commonConfig,
