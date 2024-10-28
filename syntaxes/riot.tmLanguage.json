@@ -57,6 +57,60 @@
           },
           "name": "meta.tag.any.html",
           "patterns": [
+            {
+              "match": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
+              "captures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { "name": "punctuation.section.embedded.begin.riot" }
+              },
+              "push": {
+                "end": "}",
+                "endCaptures": {
+                  "0": { "name": "punctuation.section.embedded.end.riot" }
+                },
+                "patterns": [
+                  { "include": "source.js" }
+                ]
+              }
+            },
+            {
+              "match": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { 
+                  "patterns": [
+                    { "include": "#string-double-quoted" },
+                    { "include": "#string-single-quoted" },
+                    {
+                      "match": "[^\\s\"'=<>`]+",
+                      "name": "string.unquoted.html"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "match": "\\s*(=)(?!\\s*{)",
+              "name": "invalid.illegal.equals-sign.html"
+            },
+            {
+              "match": "\\s*([\"'])[^\"']*\\1",
+              "name": "invalid.illegal.attribute-value.html"
+            },
+            {
+              "match": "\\s*([\"'])",
+              "name": "invalid.illegal.quote.html"
+            },
+            {
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "invalid.illegal.attribute-name.html" },
+                "2": { "name": "invalid.illegal.equals-sign.html" },
+                "3": { "name": "invalid.illegal.attribute-value.html" }
+              }
+            },
             { "include": "#tag-attributes" }
           ]
         },
@@ -133,36 +187,63 @@
         { "include": "#tag-style-attribute" },
         { "include": "#tag-id-attribute" },
         { "include": "#tag-generic-attribute" },
-        { "include": "#string-double-quoted" },
-        { "include": "#string-single-quoted" },
-        { "include": "#tag-expression-attribute" }
+        { "include": "#tag-invalid-standalone-equals" },
+        { "include": "#tag-invalid-standalone-quotes" }
       ]
-    },
-    "tag-expression-attribute": {
-      "begin": "(=)\\s*({)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.separator.key-value.html" },
-        "2": { "name": "punctuation.section.embedded.begin.riot" }
-      },
-      "end": "(})",
-      "endCaptures": {
-        "1": { "name": "punctuation.section.embedded.end.riot" }
-      },
-      "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
-      "patterns": [
-        { "include": "source.js" }
-      ]
-    },
-    "tag-id-attribute": {
-      "match": "\\b(id)\\b\\s*(=)",
-      "captures": {
-        "1": { "name": "entity.other.attribute-name.id.html" },
-        "2": { "name": "punctuation.separator.key-value.html" }
-      }
     },
     "tag-generic-attribute": {
-      "match": "\\b([a-zA-Z\\-:]+)",
-      "name": "entity.other.attribute-name.html"
+      "patterns": [
+        {
+          "begin": "(?<=\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
+          "beginCaptures": {
+            "1": { "name": "entity.other.attribute-name.html" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { "name": "punctuation.section.embedded.begin.riot" }
+          },
+          "end": "}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.embedded.end.riot" }
+          },
+          "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
+          "patterns": [
+            { "include": "source.js" }
+          ]
+        },
+        {
+          "match": "(?<=\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|[^\\s\"'=<>`]+)",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.html" },
+            "2": { "name": "punctuation.separator.key-value.html" },
+            "3": { 
+              "patterns": [
+                { "include": "#string-double-quoted" },
+                { "include": "#string-single-quoted" },
+                {
+                  "match": "[^\\s\"'=<>`]+",
+                  "name": "string.unquoted.html"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "match": "(?<=\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.html" }
+          }
+        }
+      ]
+    },
+    "tag-invalid-standalone-equals": {
+      "match": "(?<!\\s|[^\\s\\x00\"'>/=][^\\s\"'>/=]*\\s*)(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+      "captures": {
+        "1": { "name": "invalid.illegal.equals-sign.html" },
+        "2": { "name": "invalid.illegal.attribute-value.html" }
+      }
+    },
+    "tag-invalid-standalone-quotes": {
+      "match": "(?<!\\s*=\\s*)(\"[^\"]*\"|'[^']*')",
+      "name": "invalid.illegal.attribute-value.html"
     },
     "string-double-quoted": {
       "name": "string.quoted.double.html",
@@ -233,6 +314,13 @@
     "escaped-curly-braces": {
       "match": "\\\\{",
       "name": "constant.character.escape.riot"
+    },
+    "tag-invalid-no-space-attribute": {
+      "match": "(?<=[a-zA-Z0-9:-])\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+      "captures": {
+        "1": { "name": "invalid.illegal.equals-sign.html" },
+        "2": { "name": "invalid.illegal.attribute-value.html" }
+      }
     }
   }
 }

@@ -1,0 +1,36 @@
+<test>
+    <component></component>
+    <div
+        validattr
+        nextattrwillbeinvalid="-->"thisshouldbeinvalid="<--"
+
+        thisshouldbeok=ok
+
+        validexpression={ expression() }
+        validmixedexpression="test { expression() } test"
+
+        id="some_{ state.id }"
+        attr1="number in attribute name"
+        attr2={ expression }
+        attr3="{ expressionInQuotes }"
+        attr4='{ expressionInQuotes }'
+
+        "invalid"
+        'invalid'
+
+        "
+        '
+        =
+    ></div>
+
+    <script>
+        export default {
+            onBeforeMount() {
+                console.log("hello");
+            },
+            expression() {
+                return 12;
+            }
+        }
+    </script>
+</test>
