@@ -4,7 +4,7 @@
   "description": "RiotJS syntax highlighting and autocompletion for VSCode",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.94.0"
+    "vscode": "^1.82.0"
   },
   "categories": [
     "Programming Languages"
@@ -69,7 +69,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.8.1",
-    "@types/vscode": "^1.94.0",
+    "@types/vscode": "^1.82.0",
     "@vscode/vsce": "^3.2.1",
     "esbuild": "^0.24.0",
     "tsx": "^4.19.2"
