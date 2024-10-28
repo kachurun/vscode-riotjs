@@ -58,7 +58,11 @@
           "name": "meta.tag.any.html",
           "patterns": [
             {
-              "begin": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)",
+              "name": "invalid.illegal.attribute-name.html"
+            },
+            {
+              "begin": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/]*)\\s*(=)\\s*({)",
               "beginCaptures": {
                 "1": { "name": "entity.other.attribute-name.html" },
                 "2": { "name": "punctuation.separator.key-value.html" },
@@ -156,12 +160,79 @@
         "3": { "name": "punctuation.definition.tag.end.html" }
       },
       "patterns": [
-        { "include": "#tag-attributes" },
         {
-          "begin": "(>)",
-          "beginCaptures": {
+          "begin": "\\G",
+          "end": "(>)",
+          "endCaptures": {
             "1": { "name": "punctuation.definition.tag.end.html" }
           },
+          "patterns": [
+            {
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)",
+              "name": "invalid.illegal.attribute-name.html"
+            },
+            {
+              "match": "\\s*([\"'])",
+              "name": "invalid.illegal.quote.html"
+            },
+            {
+              "match": "\\s*(=)(?!\\s*{)",
+              "name": "invalid.illegal.equals-sign.html"
+            },
+            {
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "invalid.illegal.attribute-name.html" },
+                "2": { "name": "invalid.illegal.equals-sign.html" },
+                "3": { "name": "invalid.illegal.attribute-value.html" }
+              }
+            },
+            {
+              "begin": "\\s*([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
+              "beginCaptures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { "name": "punctuation.section.embedded.begin.riot" }
+              },
+              "end": "}",
+              "endCaptures": {
+                "0": { "name": "punctuation.section.embedded.end.riot" }
+              },
+              "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
+              "patterns": [
+                { "include": "source.js" }
+              ]
+            },
+            {
+              "match": "\\s*([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { 
+                  "patterns": [
+                    { "include": "#string-double-quoted" },
+                    { "include": "#string-single-quoted" },
+                    {
+                      "match": "[^\\s\"'=<>`]+",
+                      "name": "string.unquoted.html"
+                    }
+                  ]
+                }
+              }
+            },
+            { "include": "#tag-attributes" }
+          ]
+        },
+        {
+          "begin": "(?<=>)(?<=\\slang\\s*=\\s*(?:[\"']ts[\"']|ts)(?:\\s+.*|\\s*)>)",
+          "end": "(?=</script>)",
+          "contentName": "source.ts",
+          "patterns": [
+            { "include": "source.ts" }
+          ]
+        },
+        {
+          "begin": "(?<=>)",
           "end": "(?=</script>)",
           "contentName": "source.js",
           "patterns": [
@@ -183,7 +254,85 @@
         "3": { "name": "punctuation.definition.tag.end.html" }
       },
       "patterns": [
-        { "include": "#tag-attributes" },
+        {
+          "begin": "\\G",
+          "end": "(>)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.tag.end.html" }
+          },
+          "patterns": [
+            {
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)",
+              "name": "invalid.illegal.attribute-name.html"
+            },
+            {
+              "match": "\\s*([\"'])",
+              "name": "invalid.illegal.quote.html"
+            },
+            {
+              "match": "\\s*(=)(?!\\s*{)",
+              "name": "invalid.illegal.equals-sign.html"
+            },
+            {
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "invalid.illegal.attribute-name.html" },
+                "2": { "name": "invalid.illegal.equals-sign.html" },
+                "3": { "name": "invalid.illegal.attribute-value.html" }
+              }
+            },
+            {
+              "begin": "\\s*([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
+              "beginCaptures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { "name": "punctuation.section.embedded.begin.riot" }
+              },
+              "end": "}",
+              "endCaptures": {
+                "0": { "name": "punctuation.section.embedded.end.riot" }
+              },
+              "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
+              "patterns": [
+                { "include": "source.js" }
+              ]
+            },
+            {
+              "match": "\\s*([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { 
+                  "patterns": [
+                    { "include": "#string-double-quoted" },
+                    { "include": "#string-single-quoted" },
+                    {
+                      "match": "[^\\s\"'=<>`]+",
+                      "name": "string.unquoted.html"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "match": "\\s*(=)(?!\\s*{)",
+              "name": "invalid.illegal.equals-sign.html"
+            },
+            {
+              "match": "\\s*([\"'])",
+              "name": "invalid.illegal.quote.html"
+            },
+            {
+              "match": "(?<!\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
+              "captures": {
+                "1": { "name": "invalid.illegal.attribute-name.html" },
+                "2": { "name": "invalid.illegal.equals-sign.html" },
+                "3": { "name": "invalid.illegal.attribute-value.html" }
+              }
+            },
+            { "include": "#tag-attributes" }
+          ]
+        },
         {
           "begin": "(>)",
           "beginCaptures": {
@@ -225,7 +374,7 @@
           ]
         },
         {
-          "match": "(?<=\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|[^\\s\"'=<>`]+)",
+          "match": "(?<=\\s)([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
           "captures": {
             "1": { "name": "entity.other.attribute-name.html" },
             "2": { "name": "punctuation.separator.key-value.html" },
