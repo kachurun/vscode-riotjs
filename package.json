@@ -28,7 +28,25 @@
       {
         "language": "riot",
         "scopeName": "source.riot",
-        "path": "./syntaxes/riot.tmLanguage.json"
+        "path": "./syntaxes/riot.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html.basic": "html",
+          "source.css": "css",
+          "source.css.less": "less",
+          "source.css.scss": "scss",
+          "source.css.postcss": "postcss",
+          "source.sass": "sass",
+          "source.stylus": "stylus",
+          "source.js": "typescript",
+          "source.ts": "typescript"
+        },
+        "unbalancedBracketScopes": [
+          "storage.type.function.arrow",
+          "keyword.operator.bitwise.shift",
+          "meta.brace.angle",
+          "keyword.operator.relational",
+          "punctuation.definition.tag"
+        ]
       }
     ],
     "commands": [
