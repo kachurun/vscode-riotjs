@@ -1,5 +1,19 @@
 <test>
     <component></component>
+    <div class="flexbe-action-buttons edit-button">
+        <input />
+    </div>
+
+    <!-- HTML comment -->
+
+    <div class="project-card flexbe-white-card shadow large rounded hoverable { clsx({ hover: (state.inHover || state.inDropdown) }) }"
+         if={ state.view !== 'table' }
+         onmouseenter={ () => cardHover(true) }
+
+         onmouseleave={ () => cardHover(false) }
+         onpointerdown={ onPointerDown }
+         onclick={ goToPages }
+    ></div>
     <div
         validattr
         nextattrwillbeinvalid="-->"thisshouldbeinvalid="<--"
@@ -24,6 +38,8 @@
     ></div>
 
     <script>
+        // JS comment
+
         export default {
             onBeforeMount() {
                 console.log("hello");

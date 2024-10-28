@@ -58,24 +58,39 @@
           "name": "meta.tag.any.html",
           "patterns": [
             {
-              "match": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
-              "captures": {
+              "begin": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*({)",
+              "beginCaptures": {
                 "1": { "name": "entity.other.attribute-name.html" },
                 "2": { "name": "punctuation.separator.key-value.html" },
                 "3": { "name": "punctuation.section.embedded.begin.riot" }
               },
-              "push": {
-                "end": "}",
-                "endCaptures": {
-                  "0": { "name": "punctuation.section.embedded.end.riot" }
-                },
-                "patterns": [
-                  { "include": "source.js" }
-                ]
-              }
+              "end": "}",
+              "endCaptures": {
+                "0": { "name": "punctuation.section.embedded.end.riot" }
+              },
+              "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
+              "patterns": [
+                { "include": "source.js" }
+              ]
             },
             {
-              "match": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|[^\\s\"'=<>`]+)",
+              "begin": "\\s*(if)\\s*(=)\\s*({)",
+              "beginCaptures": {
+                "1": { "name": "entity.other.attribute-name.html" },
+                "2": { "name": "punctuation.separator.key-value.html" },
+                "3": { "name": "punctuation.section.embedded.begin.riot" }
+              },
+              "end": "}",
+              "endCaptures": {
+                "0": { "name": "punctuation.section.embedded.end.riot" }
+              },
+              "contentName": "meta.embedded.expression.riot source.js.embedded.riot",
+              "patterns": [
+                { "include": "source.js" }
+              ]
+            },
+            {
+              "match": "\\s+([^\\s\\x00\"'>/=][^\\s\"'>/=]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*'|{[^}]*}|[^\\s\"'=<>`]+)",
               "captures": {
                 "1": { "name": "entity.other.attribute-name.html" },
                 "2": { "name": "punctuation.separator.key-value.html" },
