@@ -3,23 +3,9 @@ import * as path from "path";
 
 import { LanguageClient, TransportKind } from "vscode-languageclient/node";
 
-import TypeScriptLanguageService from "./TypeScriptLanguageService";
-
 let riotClient: LanguageClient | null = null;
 let cssClient: LanguageClient | null = null;
 let outputChannel: vscode.OutputChannel | null = null;
-let tsLanguageService: TypeScriptLanguageService | null = null;
-
-function extractScriptContent(document) {
-    const text = document.getText();
-    const scriptMatch = text.match(/<script[^>]*>([\s\S]*?)<\/script>/);
-    if (scriptMatch) {
-        const scriptContent = scriptMatch[1].trim();
-        const scriptOffset = text.indexOf(scriptContent);
-        return { content: scriptContent, offset: scriptOffset };
-    }
-    return { content: "", offset: 0 };
-}
 
 function activateCSSClient(context) {
     const serverModule = context.asAbsolutePath(path.join(
@@ -49,55 +35,6 @@ function activateCSSClient(context) {
     );
 
     context.subscriptions.push(cssClient.start());
-}
-
-function activateJSClient(context, riotClient) {
-    riotClient.onRequest("custom/jsCompletion", async (params) => {
-        if (tsLanguageService == null) {
-            outputChannel?.appendLine("No Language Service");
-            return {
-                completions: [],
-                scriptOffset: { line: 0, character: 0 }
-            };
-        }
-        const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(params.textDocument.uri));
-
-        const { content, offset } = extractScriptContent(document);
-
-        if (!content) {
-            outputChannel?.appendLine("No script content found");
-            return {
-                completions: [],
-                scriptOffset: { line: 0, character: 0 }
-            };
-        }
-        
-        const position = new vscode.Position(params.position.line, params.position.character);
-        const adjustedRequestedOffset = document.offsetAt(position) - offset;
-
-        const url = new URL(params.textDocument.uri);
-        const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
-            url.pathname.slice(1) : url.pathname
-        );
-
-        try {
-            tsLanguageService.updateDocument(filePath, content);
-
-            const completions = tsLanguageService.getCompletionsAtPosition(filePath, adjustedRequestedOffset);
-
-            return {
-                completions,
-                scriptOffset: offset
-            };
-        } catch (error) {
-            outputChannel?.appendLine(`Error in jsCompletion: ${error}`);
-            outputChannel?.appendLine(`Error stack: ${error.stack}`);
-            return {
-                completions: [],
-                scriptOffset: { line: 0, character: 0 }
-            };
-        }
-    });
 }
 
 function activateAutoClosing(context) {
@@ -174,15 +111,11 @@ export async function activate(context) {
 
         await riotClient.start();
 
-        activateJSClient(context, riotClient);
         activateCSSClient(context);
         activateAutoClosing(context);
     } else {
         outputChannel.appendLine("Riot Extension client already exists");
     }
-
-    tsLanguageService = new TypeScriptLanguageService();
-    context.subscriptions.push(tsLanguageService);
 }
 
 export async function deactivate() {

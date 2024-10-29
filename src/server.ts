@@ -7,14 +7,16 @@ import {
     CompletionItem,
     TextDocumentSyncKind,
 } from "vscode-languageserver/node";
-import { TextDocument } from "vscode-languageserver-textdocument";
+import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { getLanguageService } from "vscode-html-languageservice";
 import CompletionConverter from "./CompletionConverter";
+import TypeScriptLanguageService from "./TypeScriptLanguageService";
 
 const connection = createConnection(ProposedFeatures.all);
 
 const documents = new TextDocuments(TextDocument);
 
+const tsLanguageService = new TypeScriptLanguageService();
 const htmlLanguageService = getLanguageService();
 
 let hasConfigurationCapability = false;
@@ -86,35 +88,103 @@ function isInsideExpression(document, position) {
     return !!expressionMatch;
 }
 
-connection.onCompletion(async (textDocumentPosition) => {
-    const document = documents.get(textDocumentPosition.textDocument.uri);
+function extractScriptContent(document: TextDocument) {
+    const text = document.getText();
+    const scriptMatch = text.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+    if (scriptMatch) {
+        const scriptContent = scriptMatch[1].trim();
+        const scriptOffset = text.indexOf(scriptContent);
+        return { content: scriptContent, offset: scriptOffset };
+    }
+    return { content: "", offset: 0 };
+}
+
+function getCompletionsAndScriptOffset(
+    document: TextDocument,
+    position: Position
+) {
+    if (tsLanguageService == null) {
+        connection.console.log("No Language Service");
+        return {
+            completions: undefined,
+            scriptOffset: { line: 0, character: 0 }
+        };
+    }
+    const { content, offset } = extractScriptContent(document);
+
+    if (!content) {
+        connection.console.log("No script content found");
+        return {
+            completions: undefined,
+            scriptOffset: { line: 0, character: 0 }
+        };
+    }
+
+    const adjustedRequestedOffset = document.offsetAt(position) - offset;
+
+    const url = new URL(document.uri);
+    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
+        url.pathname.slice(1) : url.pathname
+    );
+
+    try {
+        tsLanguageService.updateDocument(filePath, content);
+
+        // connection.console.log(
+        //     `${content.substring(
+        //         Math.max(0, adjustedRequestedOffset - 100),
+        //         adjustedRequestedOffset
+        //     )}|${content.substring(
+        //         adjustedRequestedOffset,
+        //         adjustedRequestedOffset + 100
+        //     )}`
+        // );
+
+        let completions = tsLanguageService.getCompletionsAtPosition(filePath, adjustedRequestedOffset);
+        if (completions) {
+            connection.console.log(`First 5 completions:\n${completions.entries.slice(0, 5).map(entry => JSON.stringify(entry, null, 2)).join("\n")}\n\n`);
+        } else {
+            connection.console.log(`No completions...`);
+        }
+
+        return {
+            completions,
+            scriptOffset: offset
+        };
+    } catch (error) {
+        connection.console.error(`Error in jsCompletion: ${error}`);
+        connection.console.error(`Error stack: ${error.stack}`);
+        return {
+            completions: undefined,
+            scriptOffset: { line: 0, character: 0 }
+        };
+    }
+}
+
+connection.onCompletion(async (params) => {
+    const document = documents.get(params.textDocument.uri);
     if (!document) {
         return [];
     }
 
     try {
         if (
-            isInsideScript(document, textDocumentPosition.position)
+            isInsideScript(document, params.position)
             // || isInsideExpression(document, textDocumentPosition.position)
         ) {
-            const result = await connection.sendRequest(
-                "custom/jsCompletion", textDocumentPosition
-            ) as {
-                completions: ts.WithMetadata<ts.CompletionInfo> | undefined,
-                scriptOffset: { line: 0, character: 0 }
-            };
-
-            const { completions, scriptOffset } = result;
+            const { completions, scriptOffset } = getCompletionsAndScriptOffset(
+                document, params.position
+            );
 
             // TODO: add scriptOffset to range of replacement
 
             return CompletionConverter.convert(completions);
-        } else if (isInsideStyle(document, textDocumentPosition.position)) {
+        } else if (isInsideStyle(document, params.position)) {
             const result = await connection.sendRequest(
                 "custom/cssCompletion",
                 {
-                    textDocument: textDocumentPosition.textDocument,
-                    position: textDocumentPosition.position,
+                    textDocument: params.textDocument,
+                    position: params.position,
                 }
             );
             return {
@@ -123,7 +193,7 @@ connection.onCompletion(async (textDocumentPosition) => {
             };
         } else {
             const htmlDocument = htmlLanguageService.parseHTMLDocument(document);
-            const htmlCompletions = htmlLanguageService.doComplete(document, textDocumentPosition.position, htmlDocument);
+            const htmlCompletions = htmlLanguageService.doComplete(document, params.position, htmlDocument);
             return {
                 isIncomplete: false,
                 items: htmlCompletions.items
@@ -141,6 +211,10 @@ connection.onCompletion(async (textDocumentPosition) => {
 
 connection.onCompletionResolve((item) => {
     return item;
+});
+
+connection.onShutdown(() => {
+    tsLanguageService.dispose();
 });
 
 documents.listen(connection);

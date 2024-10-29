@@ -41,7 +41,7 @@ export default class TypeScriptLanguageService {
         this.languageService = this.createLanguageService();
     }
 
-    private normalizePath(filePath: string): string {
+    private normalizePath(filePath: string) {
         // Convert backslashes to forward slashes and resolve relative paths
         return filePath.split(path.sep).join('/');
     }
@@ -106,7 +106,7 @@ export default class TypeScriptLanguageService {
         }
     }
 
-    private getFileSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
+    private getFileSnapshot(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
         const content = this.readFileContent(normalizedFileName);
         if (!content) {
@@ -116,7 +116,7 @@ export default class TypeScriptLanguageService {
         return ts.ScriptSnapshot.fromString(content);
     }
 
-    private doesFileExist(fileName: string): boolean {
+    private doesFileExist(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
         if (this.documents.has(normalizedFileName)) {
@@ -131,7 +131,7 @@ export default class TypeScriptLanguageService {
         return libFile !== null;
     }
 
-    private readFileContent(fileName: string): string | undefined {
+    private readFileContent(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
         // Check in-memory documents
@@ -162,7 +162,7 @@ export default class TypeScriptLanguageService {
         }
     }
 
-    private tryGetLibFile(fileName: string): string | null {
+    private tryGetLibFile(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
         if (!normalizedFileName.includes(this.libFolder)) {
@@ -182,7 +182,7 @@ export default class TypeScriptLanguageService {
         return libFileName;
     }
 
-    public updateDocument(fileName: string, content: string): void {
+    public updateDocument(fileName: string, content: string) {
         const normalizedFileName = this.normalizePath(fileName);
         if (this.documents.has(normalizedFileName)) {
             const document = this.documents.get(normalizedFileName)!;
@@ -196,7 +196,7 @@ export default class TypeScriptLanguageService {
         }
     }
 
-    public removeDocument(fileName: string): void {
+    public removeDocument(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
         this.documents.delete(normalizedFileName);
     }
@@ -204,7 +204,7 @@ export default class TypeScriptLanguageService {
     public getCompletionsAtPosition(
         fileName: string,
         position: number
-    ): ts.WithMetadata<ts.CompletionInfo> | undefined {
+    ) {
         if (this.languageService == null) {
             return undefined;
         }
