@@ -213,6 +213,31 @@ connection.onCompletionResolve((item) => {
     return item;
 });
 
+connection.onRequest('custom/logProgramFiles', async (params) => {
+    const program = tsLanguageService.getProgram();
+    if (program == null) {
+        connection.console.log("No program");
+        return;
+    }
+
+    const rootFileNames = program.getRootFileNames();
+
+    connection.console.log("Root files:");
+    rootFileNames.forEach(rootFileName => {
+        connection.console.log(rootFileName);
+    });
+
+    const rootSourceFiles: Array<ts.SourceFile> = [];
+
+    connection.console.log("Source files:");
+    program.getSourceFiles().forEach(sourceFile => {
+        if (rootFileNames.includes(sourceFile.fileName)) {
+            rootSourceFiles.push(sourceFile);
+        }
+        connection.console.log(sourceFile.fileName);
+    });
+});
+
 connection.onShutdown(() => {
     tsLanguageService.dispose();
 });

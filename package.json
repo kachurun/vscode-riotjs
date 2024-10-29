@@ -36,6 +36,12 @@
         "command": "type",
         "title": "Type",
         "enablement": "editorTextFocus && editorLangId == riot"
+      },
+      {
+        "command": "riotjs.logProgramFiles",
+        "title": "Log Program Files",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riot"
       }
     ],
     "configuration": {

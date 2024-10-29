@@ -78,6 +78,28 @@ function activateAutoClosing(context) {
     );
 }
 
+function registerCommands(context: vscode.ExtensionContext) {
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riotjs.logProgramFiles', async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor || editor.document.languageId !== 'riot') {
+                return;
+            }
+
+            if (!riotClient) {
+                vscode.window.showErrorMessage('Riot Language Server is not running');
+                return;
+            }
+
+            try {
+                await riotClient.sendRequest('custom/logProgramFiles');
+            } catch (error) {
+                vscode.window.showErrorMessage(`Error during log: ${error}`);
+            }
+        })
+    );
+}
+
 export async function activate(context) {
     outputChannel = vscode.window.createOutputChannel("Riot Extension");
     context.subscriptions.push(outputChannel);
@@ -113,6 +135,7 @@ export async function activate(context) {
 
         activateCSSClient(context);
         activateAutoClosing(context);
+        registerCommands(context);
     } else {
         outputChannel.appendLine("Riot Extension client already exists");
     }

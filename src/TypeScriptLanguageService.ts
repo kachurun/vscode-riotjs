@@ -221,6 +221,39 @@ export default class TypeScriptLanguageService {
         return completionInfo;
     }
 
+    getCompletionEntryDetails(
+        fileName,
+        position,
+        completionEntryName,
+        formatOptions,
+        source,
+        preferences,
+        data
+    ) {
+        return this.languageService?.getCompletionEntryDetails(
+            fileName,
+            position,
+            completionEntryName,
+            formatOptions,
+            source,
+            preferences,
+            data
+        );
+    }
+    getCompletionEntrySymbol(
+        fileName,
+        position,
+        completionEntryName,
+        formatOptions
+    ) {
+        return this.languageService?.getCompletionEntrySymbol(
+            fileName,
+            position,
+            completionEntryName,
+            formatOptions
+        );
+    }
+
     public dispose() {
         if (!this.languageService) {
             return;
@@ -228,5 +261,9 @@ export default class TypeScriptLanguageService {
         this.languageService.dispose();
         this.documents.clear();
         this.languageService = null;
+    }
+
+    public getProgram() {
+        return this.languageService?.getProgram();
     }
 }
