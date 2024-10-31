@@ -16,6 +16,13 @@ const connection = createConnection(ProposedFeatures.all);
 
 const documents = new TextDocuments(TextDocument);
 
+function pathFromUri(uri) {
+    const url = new URL(uri);
+    return decodeURIComponent(url.pathname.startsWith("/") ?
+        url.pathname.slice(1) : url.pathname
+    );
+}
+
 const tsLanguageService = new TypeScriptLanguageService();
 const htmlLanguageService = getLanguageService();
 
@@ -99,6 +106,20 @@ function extractScriptContent(document: TextDocument) {
     return { content: "", offset: 0 };
 }
 
+function updateRiotDocument(
+    document: TextDocument
+) {
+    const { content, offset } = extractScriptContent(document);
+    const url = new URL(document.uri);
+    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
+        url.pathname.slice(1) : url.pathname
+    );
+
+    tsLanguageService.updateDocument(filePath, content);
+
+    return { scriptOffset: offset };
+}
+
 function getCompletionsAndScriptOffset(
     document: TextDocument,
     position: Position
@@ -122,12 +143,8 @@ function getCompletionsAndScriptOffset(
 
     const adjustedRequestedOffset = document.offsetAt(position) - offset;
 
-    const url = new URL(document.uri);
-    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
-        url.pathname.slice(1) : url.pathname
-    );
-
     try {
+        const filePath = pathFromUri(document.uri);
         tsLanguageService.updateDocument(filePath, content);
 
         // connection.console.log(
@@ -139,7 +156,7 @@ function getCompletionsAndScriptOffset(
         //         adjustedRequestedOffset + 100
         //     )}`
         // );
-
+        
         let completions = tsLanguageService.getCompletionsAtPosition(filePath, adjustedRequestedOffset);
         if (completions) {
             connection.console.log(`First 5 completions:\n${completions.entries.slice(0, 5).map(entry => JSON.stringify(entry, null, 2)).join("\n")}\n\n`);
@@ -236,6 +253,48 @@ connection.onRequest('custom/logProgramFiles', async (params) => {
         }
         connection.console.log(sourceFile.fileName);
     });
+});
+
+connection.onRequest('custom/logTypeAtCursor', async ({
+    uri, cursorPosition
+}) => {
+    const document = documents.get(uri);
+    if (!document) {
+        connection.console.log(`Document "${uri}" not found`);
+        return;
+    }
+
+    const url = new URL(document.uri);
+    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
+        url.pathname.slice(1) : url.pathname
+    );
+
+    connection.console.log(JSON.stringify({
+        uri,
+        filePath,
+        cursorPosition
+    }, null, 2));
+
+    const { scriptOffset } = updateRiotDocument(document);
+
+    const info = tsLanguageService.getQuickInfoAtPosition(
+        filePath, cursorPosition - scriptOffset
+    );
+    connection.console.log(`Type at ${cursorPosition}: ${
+        // JSON.stringify(info, null, 2)
+        info?.displayParts?.map(p => p.text).join('')
+    }`);
+});
+
+connection.onRequest('custom/logScriptContent', async ({ uri }) => {
+    const document = documents.get(uri);
+    if (!document) {
+        connection.console.log(`Document "${uri}" not found`);
+        return;
+    }
+
+    const { content } = extractScriptContent(document);
+    connection.console.log(`Script content of "${pathFromUri(document.uri)}":\n\`\`\`\n${content}\n\`\`\`\n`);
 });
 
 connection.onShutdown(() => {

@@ -98,46 +98,104 @@ function registerCommands(context: vscode.ExtensionContext) {
             }
         })
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riotjs.logTypeAtCursor', async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor || editor.document.languageId !== 'riot') {
+                return;
+            }
+
+            if (!riotClient) {
+                vscode.window.showErrorMessage('Riot Language Server is not running');
+                return;
+            }
+
+            try {
+
+                await riotClient.sendRequest('custom/logTypeAtCursor', {
+                    uri: editor.document.uri.toString(),
+                    cursorPosition: editor.document.offsetAt(
+                        editor.selection.active
+                    )
+                });
+            } catch (error) {
+                vscode.window.showErrorMessage(`Error during log: ${error}`);
+            }
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand('riotjs.logScriptContent', async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor || editor.document.languageId !== 'riot') {
+                return;
+            }
+
+            if (!riotClient) {
+                vscode.window.showErrorMessage('Riot Language Server is not running');
+                return;
+            }
+
+            try {
+
+                await riotClient.sendRequest('custom/logScriptContent', {
+                    uri: editor.document.uri.toString()
+                });
+            } catch (error) {
+                vscode.window.showErrorMessage(`Error during log: ${error}`);
+            }
+        })
+    );
 }
 
 export async function activate(context) {
-    outputChannel = vscode.window.createOutputChannel("Riot Extension");
-    context.subscriptions.push(outputChannel);
+    try {
+        outputChannel = vscode.window.createOutputChannel("Riot Extension");
+        context.subscriptions.push(outputChannel);
+        outputChannel.appendLine("Starting activation...");
 
-    const serverModule = context.asAbsolutePath(path.join(
-        path.relative(context.extensionPath, __dirname),
-        "server.js"
-    ));
-    const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+        const serverModule = context.asAbsolutePath(path.join('build', 'server.js'));
+        outputChannel.appendLine(`Server module path: ${serverModule}`);
 
-    const serverOptions = {
-        run: { module: serverModule, transport: TransportKind.ipc },
-        debug: {
-            module: serverModule,
-            transport: TransportKind.ipc,
-            options: debugOptions,
-        },
-    };
+        const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
-    const clientOptions = {
-        documentSelector: [{ scheme: "file", language: "riot" }]
-    };
+        const serverOptions = {
+            run: { module: serverModule, transport: TransportKind.ipc },
+            debug: {
+                module: serverModule,
+                transport: TransportKind.ipc,
+                options: debugOptions,
+            },
+        };
 
-    if (!riotClient) {
-        riotClient = new LanguageClient(
-            "riotLanguageServer",
-            "Riot Language Server",
-            serverOptions,
-            clientOptions
-        );
+        const clientOptions = {
+            documentSelector: [{ scheme: "file", language: "riot" }]
+        };
 
-        await riotClient.start();
+        if (!riotClient) {
+            outputChannel.appendLine("Creating new client...");
+            riotClient = new LanguageClient(
+                "riotLanguageServer",
+                "Riot Language Server",
+                serverOptions,
+                clientOptions
+            );
 
-        activateCSSClient(context);
-        activateAutoClosing(context);
-        registerCommands(context);
-    } else {
-        outputChannel.appendLine("Riot Extension client already exists");
+            outputChannel.appendLine("Starting client...");
+            await riotClient.start();
+            outputChannel.appendLine("Client started successfully");
+
+            activateCSSClient(context);
+            activateAutoClosing(context);
+            registerCommands(context);
+        } else {
+            outputChannel.appendLine("Riot Extension client already exists");
+        }
+    } catch (error) {
+        if (outputChannel) {
+            outputChannel.appendLine(`Activation error: ${error.message}`);
+            outputChannel.appendLine(`Stack trace: ${error.stack}`);
+        }
+        throw error;
     }
 }
 

@@ -42,6 +42,18 @@
         "title": "Log Program Files",
         "category": "RiotJS",
         "enablement": "editorLangId == riot"
+      },
+      {
+        "command": "riotjs.logTypeAtCursor",
+        "title": "Log Type At Cursor",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riot"
+      },
+      {
+        "command": "riotjs.logScriptContent",
+        "title": "Log Script Content",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riot"
       }
     ],
     "configuration": {
@@ -79,5 +91,11 @@
     "@vscode/vsce": "^3.2.1",
     "esbuild": "^0.24.0",
     "tsx": "^4.19.2"
-  }
+  },
+  "files": [
+    "build/*",
+    "syntaxes/*",
+    "language-configuration.json",
+    "package.json"
+  ]
 }
