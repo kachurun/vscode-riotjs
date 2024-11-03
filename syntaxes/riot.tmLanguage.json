@@ -318,10 +318,7 @@
           ]
         },
         {
-          "begin": "(>)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.tag.end.html" }
-          },
+          "begin": "(?<=<style[^>]*>)",
           "end": "(?=</style>)",
           "contentName": "source.css",
           "patterns": [
