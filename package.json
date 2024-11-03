@@ -78,7 +78,7 @@
   },
   "dependencies": {
     "typescript": "^5.6.3",
-    "vscode-css-languageserver-bin": "^1.4.0",
+    "vscode-css-languageservice": "^6.3.1",
     "vscode-html-languageservice": "^5.3.1",
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",

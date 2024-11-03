@@ -7,36 +7,6 @@ let riotClient: LanguageClient | null = null;
 let cssClient: LanguageClient | null = null;
 let outputChannel: vscode.OutputChannel | null = null;
 
-function activateCSSClient(context) {
-    const serverModule = context.asAbsolutePath(path.join(
-        "node_modules",
-        "vscode-css-languageserver-bin",
-        "cssServerMain.js"
-    ));
-
-    const serverOptions = {
-        run: { module: serverModule, transport: TransportKind.ipc },
-        debug: {
-            module: serverModule,
-            transport: TransportKind.ipc,
-            options: { execArgv: ["--nolazy", "--inspect=6011"] }
-        }
-    };
-
-    const clientOptions = {
-        documentSelector: [{ scheme: "file", language: "css" }],
-    };
-
-    cssClient = new LanguageClient(
-        "cssLanguageServer",
-        "CSS Language Server",
-        serverOptions,
-        clientOptions
-    );
-
-    context.subscriptions.push(cssClient.start());
-}
-
 function activateAutoClosing(context) {
     const config = vscode.workspace.getConfiguration("riotjs");
     const enableAutoClosing = config.get("enableAutoClosing");
@@ -184,7 +154,6 @@ export async function activate(context) {
             await riotClient.start();
             outputChannel.appendLine("Client started successfully");
 
-            activateCSSClient(context);
             activateAutoClosing(context);
             registerCommands(context);
         } else {

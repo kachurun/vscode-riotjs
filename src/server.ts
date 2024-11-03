@@ -8,9 +8,12 @@ import {
     TextDocumentSyncKind,
 } from "vscode-languageserver/node";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
-import { getLanguageService } from "vscode-html-languageservice";
+import { getLanguageService as getHTMLLanguageService } from "vscode-html-languageservice";
+import { getCSSLanguageService } from "vscode-css-languageservice";
 import CompletionConverter from "./CompletionConverter";
 import TypeScriptLanguageService from "./TypeScriptLanguageService";
+import { LanguageClient, TransportKind } from "vscode-languageclient/node";
+import path from "path";
 
 const connection = createConnection(ProposedFeatures.all);
 
@@ -24,7 +27,8 @@ function pathFromUri(uri) {
 }
 
 const tsLanguageService = new TypeScriptLanguageService();
-const htmlLanguageService = getLanguageService();
+const htmlLanguageService = getHTMLLanguageService();
+const cssLanguageService = getCSSLanguageService();
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -53,36 +57,35 @@ connection.onInitialize((params) => {
     };
 });
 
-function isInsideScript(document, position) {
+function isInsideTag(document, position, tag) {
     const text = document.getText();
     const offset = document.offsetAt(position);
     const beforeCursor = text.slice(0, offset);
 
-    const scriptOpenTag = /<script[^>]*>/gi;
-    const scriptCloseTag = /<\/script>/gi;
+    const tagOpeningRegex = new RegExp(`<${tag}[^>]*>`, "gi");
+    const tagClosingRegex = new RegExp(`<\/${tag}>`, "gi");
 
-    let scriptStart = -1;
+    let tagStart = -1;
     let match;
 
-    while ((match = scriptOpenTag.exec(beforeCursor)) !== null) {
-        scriptStart = match.index + match[0].length;
+    while ((match = tagOpeningRegex.exec(beforeCursor)) !== null) {
+        tagStart = match.index + match[0].length;
     }
 
-    if (scriptStart === -1) return false;
+    if (tagStart === -1) return false;
 
-    const afterScriptStart = text.slice(scriptStart);
-    const scriptEnd = afterScriptStart.search(scriptCloseTag);
+    const afterTagStart = text.slice(tagStart);
+    const tagEnd = afterTagStart.search(tagClosingRegex);
 
-    return scriptEnd === -1 || offset < scriptStart + scriptEnd;
+    return tagEnd === -1 || offset < tagStart + tagEnd;
+}
+
+function isInsideScript(document, position) {
+    return isInsideTag(document, position, "script");
 }
 
 function isInsideStyle(document, position) {
-    const text = document.getText();
-    const offset = document.offsetAt(position);
-    const beforeCursor = text.slice(0, offset);
-
-    const styleMatch = beforeCursor.match(/<style[^>]*>(?:.|\n)*$/);
-    return !!styleMatch;
+    return isInsideTag(document, position, "style");
 }
 
 function isInsideExpression(document, position) {
@@ -197,24 +200,20 @@ connection.onCompletion(async (params) => {
 
             return CompletionConverter.convert(completions);
         } else if (isInsideStyle(document, params.position)) {
-            const result = await connection.sendRequest(
-                "custom/cssCompletion",
-                {
-                    textDocument: params.textDocument,
-                    position: params.position,
-                }
-            );
+
+            // TODO: should extract content from style tag, and remap position after completions
+            // connection.console.log("Requested position is inside style");
+            // const parsedStylesheet = cssLanguageService.parseStylesheet(document);
+            // const cssCompletions = cssLanguageService.doComplete(document, params.position, parsedStylesheet);
             return {
                 isIncomplete: false,
-                items: (result || []) as CompletionItem[]
+                items: []
             };
         } else {
+            connection.console.log("Requested position is inside html");
             const htmlDocument = htmlLanguageService.parseHTMLDocument(document);
             const htmlCompletions = htmlLanguageService.doComplete(document, params.position, htmlDocument);
-            return {
-                isIncomplete: false,
-                items: htmlCompletions.items
-            };
+            return htmlCompletions;
         }
     } catch (error) {
         connection.console.error(`Error in completion handler: ${error}`);
