@@ -14,8 +14,7 @@ const nodeBuiltins = [
 
 // Dependencies that should remain external (not bundled)
 const externalDeps = [
-    'vscode',
-    'vscode-css-languageserver-bin'
+    'vscode'
 ];
 
 
@@ -143,20 +142,13 @@ async function build() {
                         // Try to resolve with extensions in order
                         const extensions = ['.ts', '.js', '.json', '.node'];
                         const basePath = path.resolve(args.resolveDir, args.path);
-                        
-                        // First, check if the exact path exists
-                        if (fs.existsSync(basePath)) {
-                            return { path: basePath }
-                        }
-                        
-                        // Then try each extension
                         for (const ext of extensions) {
                             const pathWithExt = basePath + ext;
                             if (fs.existsSync(pathWithExt)) {
                                 return { path: pathWithExt }
                             }
                         }
-                        
+
                         // If no file found with extensions, try as directory with index files
                         if (fs.existsSync(basePath) && fs.statSync(basePath).isDirectory()) {
                             for (const ext of extensions) {
