@@ -17,9 +17,9 @@ function activateAutoClosing(context) {
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument((event) => {
             if (event.contentChanges.length === 0) return;
-            
+
             const editor = vscode.window.activeTextEditor;
-            if (!editor || editor.document === event.document || editor.document.languageId !== "riot") {
+            if (!editor || editor.document !== event.document || editor.document.languageId !== "riot") {
                 return;
             }
 
