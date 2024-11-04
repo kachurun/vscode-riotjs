@@ -18,10 +18,9 @@ export default class TypeScriptLanguageService {
     private compilerOptions: ts.CompilerOptions;
 
     private static defaultCompilerOptions: ts.CompilerOptions = {
-        target: ts.ScriptTarget.Latest,
-        module: ts.ModuleKind.CommonJS,
-        moduleResolution: ts.ModuleResolutionKind.NodeJs,
-        lib: ['lib.es2015.d.ts', 'lib.dom.d.ts'],
+        target: ts.ScriptTarget.ESNext,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
         allowJs: true,
         checkJs: true,
         strict: true,
@@ -32,17 +31,16 @@ export default class TypeScriptLanguageService {
         this.currentDirectory = this.normalizePath(options.currentDirectory ?? process.cwd());
         this.compilerOptions = {
             ...TypeScriptLanguageService.defaultCompilerOptions,
-            ...options.compilerOptions,
+            ...options.compilerOptions
         };
 
         this.documents = new Map();
-        // this.libFolder = this.normalizePath(path.dirname(require.resolve('typescript/lib/lib.d.ts')));
         this.libFolder = this.normalizePath(path.dirname(ts.sys.getExecutingFilePath()));
+        console.log({ libFolder: this.libFolder });
         this.languageService = this.createLanguageService();
     }
 
-    private normalizePath(filePath: string): string {
-        // Convert backslashes to forward slashes and resolve relative paths
+    private normalizePath(filePath: string) {
         return filePath.split(path.sep).join('/');
     }
 
@@ -67,6 +65,7 @@ export default class TypeScriptLanguageService {
             getCompilationSettings: () => this.compilerOptions,
             getDefaultLibFileName: (options) => {
                 const libPath = ts.getDefaultLibFilePath(options);
+                console.log({ libPath });
                 return this.normalizePath(libPath);
             },
             fileExists: (fileName) => this.doesFileExist(fileName),
@@ -77,6 +76,35 @@ export default class TypeScriptLanguageService {
                 );
                 return results.map(result => this.normalizePath(result));
             },
+            resolveModuleNames: (moduleNames, containingFile, _, __, options) => {
+                return moduleNames.map(moduleName => {
+                    const result = ts.resolveModuleName(
+                        moduleName,
+                        containingFile,
+                        this.compilerOptions,
+                        {
+                            fileExists: fileName => this.doesFileExist(fileName),
+                            readFile: fileName => this.readFileContent(fileName),
+                        }
+                    );
+                    
+                    return result.resolvedModule;
+                    // console.log(`Module "${moduleName}" not resolved`);
+    
+                    // // Fall back to trying to resolve relative to the containing file
+                    // const candidate = path.join(path.dirname(containingFile), moduleName);
+                    // if (this.doesFileExist(candidate)) {
+                    //     return {
+                    //         resolvedFileName: candidate,
+                    //         isExternalLibraryImport: false,
+                    //         extension: path.extname(candidate) as ts.Extension
+                    //     };
+                    // }
+    
+                    // return undefined;
+                });
+            },
+            getDirectories: compilerHost.getDirectories?.bind(compilerHost)
         };
     }
 
@@ -106,7 +134,7 @@ export default class TypeScriptLanguageService {
         }
     }
 
-    private getFileSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
+    private getFileSnapshot(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
         const content = this.readFileContent(normalizedFileName);
         if (!content) {
@@ -116,7 +144,7 @@ export default class TypeScriptLanguageService {
         return ts.ScriptSnapshot.fromString(content);
     }
 
-    private doesFileExist(fileName: string): boolean {
+    private doesFileExist(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
         if (this.documents.has(normalizedFileName)) {
@@ -131,7 +159,7 @@ export default class TypeScriptLanguageService {
         return libFile !== null;
     }
 
-    private readFileContent(fileName: string): string | undefined {
+    private readFileContent(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
         // Check in-memory documents
@@ -162,7 +190,7 @@ export default class TypeScriptLanguageService {
         }
     }
 
-    private tryGetLibFile(fileName: string): string | null {
+    private tryGetLibFile(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
         if (!normalizedFileName.includes(this.libFolder)) {
@@ -182,7 +210,8 @@ export default class TypeScriptLanguageService {
         return libFileName;
     }
 
-    public updateDocument(fileName: string, content: string): void {
+    public updateDocument(fileName: string, content: string) {
+        console.log(`Updating document "${fileName}"`);
         const normalizedFileName = this.normalizePath(fileName);
         if (this.documents.has(normalizedFileName)) {
             const document = this.documents.get(normalizedFileName)!;
@@ -196,7 +225,7 @@ export default class TypeScriptLanguageService {
         }
     }
 
-    public removeDocument(fileName: string): void {
+    public removeDocument(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
         this.documents.delete(normalizedFileName);
     }
@@ -204,7 +233,7 @@ export default class TypeScriptLanguageService {
     public getCompletionsAtPosition(
         fileName: string,
         position: number
-    ): ts.WithMetadata<ts.CompletionInfo> | undefined {
+    ) {
         if (this.languageService == null) {
             return undefined;
         }
@@ -215,10 +244,55 @@ export default class TypeScriptLanguageService {
             {
                 includeCompletionsForModuleExports: true,
                 includeCompletionsWithInsertText: true,
+                includeAutomaticOptionalChainCompletions: true,
+                includeCompletionsWithObjectLiteralMethodSnippets: true,
+                includeCompletionsWithClassMemberSnippets: true
             }
         );
 
         return completionInfo;
+    }
+
+    getCompletionEntryDetails(
+        fileName,
+        position,
+        completionEntryName,
+        formatOptions,
+        source,
+        preferences,
+        data
+    ) {
+        return this.languageService?.getCompletionEntryDetails(
+            this.normalizePath(fileName),
+            position,
+            completionEntryName,
+            formatOptions,
+            source,
+            preferences,
+            data
+        );
+    }
+    getCompletionEntrySymbol(
+        fileName,
+        position,
+        completionEntryName,
+        formatOptions
+    ) {
+        return this.languageService?.getCompletionEntrySymbol(
+            this.normalizePath(fileName),
+            position,
+            completionEntryName,
+            formatOptions
+        );
+    }
+
+    getQuickInfoAtPosition(
+        fileName: string, position: number
+    ) {
+        return this.languageService?.getQuickInfoAtPosition(
+            this.normalizePath(fileName),
+            position
+        );
     }
 
     public dispose() {
@@ -228,5 +302,9 @@ export default class TypeScriptLanguageService {
         this.languageService.dispose();
         this.documents.clear();
         this.languageService = null;
+    }
+
+    public getProgram() {
+        return this.languageService?.getProgram();
     }
 }
