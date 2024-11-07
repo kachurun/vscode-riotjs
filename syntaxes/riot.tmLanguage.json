@@ -3,8 +3,11 @@
   "name": "RiotJS",
   "scopeName": "source.riot",
   "patterns": [
-    { "include": "#root-component" },
-    { "include": "#invalid-content" }
+    { "include": "#comments" },
+    { "include": "#line-comments" },
+    { "include": "#block-comments" },
+    { "include": "#invalid-content" },
+    { "include": "#root-component" }
   ],
   "repository": {
     "root-component": {
@@ -39,8 +42,22 @@
       "name": "meta.component.riot",
       "contentName": "meta.component.content.riot"
     },
+    "comments": {
+      "begin": "<!--",
+      "end": "-->",
+      "name": "comment.block.html"
+    },
+    "line-comments": {
+      "match": "//.*$",
+      "name": "comment.line.double-slash"
+    },
+    "block-comments": {
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block"
+    },
     "invalid-content": {
-      "match": ".",
+      "match": "[^\\s<>]+",
       "name": "invalid.illegal.outside-component.riot"
     },
     "tags": {
@@ -433,11 +450,6 @@
       "patterns": [
         { "include": "source.js" }
       ]
-    },
-    "comments": {
-      "begin": "<!--",
-      "end": "-->",
-      "name": "comment.block.html"
     },
     "tag-style-attribute": {
       "begin": "\\b(style)\\s*(=)\\s*(\")",
