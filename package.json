@@ -16,7 +16,9 @@
         "id": "riotjs",
         "aliases": [
           "RiotJS",
-          "riotjs"
+          "Riot.JS",
+          "riotjs",
+          "riot.js"
         ],
         "extensions": [
           ".riot"
@@ -40,25 +42,25 @@
       {
         "command": "type",
         "title": "Type",
-        "enablement": "editorTextFocus && editorLangId == riot"
+        "enablement": "editorTextFocus && editorLangId == riotjs"
       },
       {
         "command": "riotjs.logProgramFiles",
         "title": "Log Program Files",
         "category": "RiotJS",
-        "enablement": "editorLangId == riot"
+        "enablement": "editorLangId == riotjs"
       },
       {
         "command": "riotjs.logTypeAtCursor",
         "title": "Log Type At Cursor",
         "category": "RiotJS",
-        "enablement": "editorLangId == riot"
+        "enablement": "editorLangId == riotjs"
       },
       {
         "command": "riotjs.logScriptContent",
         "title": "Log Script Content",
         "category": "RiotJS",
-        "enablement": "editorLangId == riot"
+        "enablement": "editorLangId == riotjs"
       }
     ],
     "configuration": {

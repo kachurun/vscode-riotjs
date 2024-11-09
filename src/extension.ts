@@ -19,7 +19,7 @@ function activateAutoClosing(context) {
             if (event.contentChanges.length === 0) return;
 
             const editor = vscode.window.activeTextEditor;
-            if (!editor || editor.document !== event.document || editor.document.languageId !== "riot") {
+            if (!editor || editor.document !== event.document || editor.document.languageId !== "riotjs") {
                 return;
             }
 
@@ -52,7 +52,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('riotjs.logProgramFiles', async () => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor || editor.document.languageId !== 'riot') {
+            if (!editor || editor.document.languageId !== 'riotjs') {
                 return;
             }
 
@@ -71,7 +71,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('riotjs.logTypeAtCursor', async () => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor || editor.document.languageId !== 'riot') {
+            if (!editor || editor.document.languageId !== 'riotjs') {
                 return;
             }
 
@@ -96,7 +96,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('riotjs.logScriptContent', async () => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor || editor.document.languageId !== 'riot') {
+            if (!editor || editor.document.languageId !== 'riotjs') {
                 return;
             }
 
@@ -138,7 +138,7 @@ export async function activate(context) {
         };
 
         const clientOptions = {
-            documentSelector: [{ scheme: "file", language: "riot" }]
+            documentSelector: [{ scheme: "file", language: "riotjs" }]
         };
 
         if (!riotClient) {
