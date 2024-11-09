@@ -1,0 +1,20 @@
+{
+  "scopeName": "source.riot.expressions",
+  "injectionSelector": "L:source.riot meta.attribute -meta.embedded",
+  "patterns": [
+    {
+      "begin": "(?<=[^\\\\]){",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.js" }
+      },
+      "end": "}",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.js" }
+      },
+      "contentName": "meta.embedded.line.js",
+      "patterns": [
+        { "include": "source.js" }
+      ]
+    }
+  ]
+}

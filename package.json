@@ -29,6 +29,11 @@
         "language": "riot",
         "scopeName": "source.riot",
         "path": "./syntaxes/riot.tmLanguage.json"
+      },
+      {
+        "path": "./syntaxes/riot-expressions.json",
+        "scopeName": "source.riot.expressions",
+        "injectTo": ["source.riot"]
       }
     ],
     "commands": [
