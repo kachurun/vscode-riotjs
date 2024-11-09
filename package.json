@@ -13,10 +13,10 @@
   "contributes": {
     "languages": [
       {
-        "id": "riot",
+        "id": "riotjs",
         "aliases": [
           "RiotJS",
-          "riot"
+          "riotjs"
         ],
         "extensions": [
           ".riot"
@@ -26,14 +26,14 @@
     ],
     "grammars": [
       {
-        "language": "riot",
-        "scopeName": "source.riot",
-        "path": "./syntaxes/riot.tmLanguage.json"
+        "language": "riotjs",
+        "scopeName": "source.riotjs",
+        "path": "./syntaxes/riotjs.tmLanguage.json"
       },
       {
-        "path": "./syntaxes/riot-expressions.json",
-        "scopeName": "source.riot.expressions",
-        "injectTo": ["source.riot"]
+        "path": "./syntaxes/riotjs-expressions.json",
+        "scopeName": "source.riotjs.expressions",
+        "injectTo": ["source.riotjs"]
       }
     ],
     "commands": [

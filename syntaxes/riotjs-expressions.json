@@ -1,6 +1,6 @@
 {
-  "scopeName": "source.riot.expressions",
-  "injectionSelector": "L:source.riot meta.attribute -meta.embedded",
+  "scopeName": "source.riotjs.expressions",
+  "injectionSelector": "L:source.riotjs meta.attribute -meta.embedded",
   "patterns": [
     {
       "begin": "(?<=[^\\\\]){",
