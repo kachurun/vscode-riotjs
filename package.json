@@ -31,8 +31,8 @@
         "path": "./syntaxes/riotjs.tmLanguage.json"
       },
       {
-        "path": "./syntaxes/riotjs-expressions.json",
-        "scopeName": "source.riotjs.expressions",
+        "path": "./syntaxes/riotjs-expression.json",
+        "scopeName": "source.riotjs.expression",
         "injectTo": ["source.riotjs"]
       }
     ],

@@ -1,5 +1,5 @@
 {
-  "scopeName": "source.riotjs.expressions",
+  "scopeName": "source.riotjs.expression",
   "injectionSelector": "L:source.riotjs meta.attribute -meta.embedded",
   "patterns": [
     {

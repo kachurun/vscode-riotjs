@@ -24,6 +24,7 @@
         "2": { "name": "entity.name.tag.html" },
         "3": { "name": "punctuation.definition.tag.end.html" }
       },
+      "contentName": "text.plain",
       "patterns": [
         {
           "begin": "(</)([\\w-]+)\\s*(>)",
@@ -35,6 +36,7 @@
           },
           "end": "^\\s*(?=</)",
           "patterns": [
+            { "include": "source.riotjs.expression" },
             { "include": "text.html.derivative" }
           ]
         },
@@ -53,6 +55,7 @@
           "begin": "(?<=>)",
           "end": "^\\s*(?=</)",
           "patterns": [
+            { "include": "source.riotjs.expression" },
             { "include": "text.html.derivative" }
           ]
         }
