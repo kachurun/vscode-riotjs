@@ -6,6 +6,7 @@ import {
     ProposedFeatures,
     CompletionItem,
     TextDocumentSyncKind,
+    MarkupKind,
 } from "vscode-languageserver/node";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { getLanguageService as getHTMLLanguageService } from "vscode-html-languageservice";
@@ -52,7 +53,8 @@ connection.onInitialize((params) => {
             completionProvider: {
                 resolveProvider: true,
                 triggerCharacters: ["<", " ", ":", "{", "."],
-            }
+            },
+            hoverProvider: true
         },
     };
 });
@@ -62,7 +64,7 @@ function isInsideTag(document, position, tag) {
     const offset = document.offsetAt(position);
     const beforeCursor = text.slice(0, offset);
 
-    const tagOpeningRegex = new RegExp(`<${tag}[^>]*>`, "gi");
+    const tagOpeningRegex = new RegExp(`<${tag}(?:\\s[^>]*)?>`, "gi");
     const tagClosingRegex = new RegExp(`<\/${tag}>`, "gi");
 
     let tagStart = -1;
@@ -181,6 +183,83 @@ function getCompletionsAndScriptOffset(
     }
 }
 
+function getHoverInfo(
+    document: TextDocument,
+    position: Position
+) {
+    if (tsLanguageService == null) {
+        connection.console.log("No Language Service");
+        return null;
+    }
+    const { content, offset } = extractScriptContent(document);
+
+    if (!content) {
+        connection.console.log("No script content found");
+        return null;
+    }
+
+    const adjustedRequestedOffset = document.offsetAt(position) - offset;
+
+    try {
+        const filePath = pathFromUri(document.uri);
+        tsLanguageService.updateDocument(filePath, content);
+
+        const quickInfo = tsLanguageService.getQuickInfoAtPosition(filePath, adjustedRequestedOffset);
+
+        if (!quickInfo) {
+            return null;
+        }
+
+        const displayText = (
+            '```typescript\n' +
+            ts.displayPartsToString(quickInfo.displayParts || []) +
+            '\n```'
+        );
+
+        // Format documentation as regular markdown
+        const documentation = (quickInfo.documentation ?
+            ts.displayPartsToString(
+                quickInfo.documentation
+            ).split('\n').map(line => line.trim()).join('\n\n') :
+            ''
+        );
+
+        // Handle tags if present
+        const tags = quickInfo.tags?.map(tag => {
+            const tagText = ts.displayPartsToString(tag.text);
+            switch (tag.name) {
+                case 'param':
+                    return `*@param* \`${tag.text}\``;
+                case 'returns':
+                    return `*@returns* ${tagText}`;
+                case 'example':
+                    return `*Example:*\n\`\`\`typescript\n${tagText}\n\`\`\``;
+                default:
+                    return `*@${tag.name}* ${tagText}`;
+            }
+        }).join('\n\n');
+
+        let contents = displayText;
+        if (documentation) {
+            contents += '\n\n---\n\n' + documentation;
+        }
+        if (tags) {
+            contents += '\n\n---\n\n' + tags;
+        }
+    
+        return {
+            contents: {
+                kind: MarkupKind.Markdown,
+                value: contents
+            }
+        };
+    } catch (error) {
+        connection.console.error(`Error in jsCompletion: ${error}`);
+        connection.console.error(`Error stack: ${error.stack}`);
+        return null;
+    }
+}
+
 connection.onCompletion(async (params) => {
     const document = documents.get(params.textDocument.uri);
     if (!document) {
@@ -228,6 +307,18 @@ connection.onCompletion(async (params) => {
 connection.onCompletionResolve((item) => {
     return item;
 });
+
+connection.onHover((params) => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) {
+        return null;
+    }
+
+    if (isInsideScript(document, params.position)) {
+        return getHoverInfo(document, params.position);
+    }
+    return null;
+})
 
 connection.onRequest('custom/logProgramFiles', async (params) => {
     const program = tsLanguageService.getProgram();
