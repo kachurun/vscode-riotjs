@@ -2,7 +2,7 @@ import { Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 export default function isInsideTag(
-    document: TextDocument,
+    document: Omit<TextDocument, "uri">,
     position: Position,
     tag: string
 ) {

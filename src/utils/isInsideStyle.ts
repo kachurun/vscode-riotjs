@@ -4,7 +4,7 @@ import { Position } from "vscode-languageserver";
 import isInsideTag from "./isInsideTag";
 
 export default function isInsideStyle(
-    document: TextDocument,
+    document: Omit<TextDocument, "uri">,
     position: Position
 ) {
     return isInsideTag(document, position, "style");

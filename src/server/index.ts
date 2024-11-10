@@ -14,13 +14,14 @@ import { getCSSLanguageService } from "vscode-css-languageservice";
 import CompletionConverter from "../CompletionConverter";
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
+import isInsideScript from "../utils/isInsideScript";
+import isInsideStyle from "../utils/isInsideStyle";
+
 import getDefinitions from "./getDefinitions";
 import extractScriptContent from "./extractScriptContent";
 import updateRiotDocument from "./updateRiotDocument";
 import getUriFromPath from "./getUriFromPath";
-import isInsideScript from "./isInsideScript";
 import getCompletionsAndScriptOffset from "./getCompletionAndScriptOffset";
-import isInsideStyle from "./isInsideStyle";
 import getHoverInfo from "./getHoverInfo";
 import pathFromUri from "./pathFromUri";
 
