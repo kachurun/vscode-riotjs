@@ -62,15 +62,24 @@ export default function getDefinitions(
             return null;
         }
 
-        const start = sourceFile.getLineAndCharacterOfPosition(definition.textSpan.start);
-        const end = sourceFile.getLineAndCharacterOfPosition(
-            definition.textSpan.start + definition.textSpan.length
-        );
-
-        // Create selection range for the definition
-        const range = Range.create(
-            start.line, start.character,
-            end.line, end.character
+        const range = (definition.fileName === filePath ?
+            Range.create(
+                document.positionAt(
+                    scriptOffset +
+                    definition.textSpan.start
+                ),
+                document.positionAt(
+                    scriptOffset +
+                    definition.textSpan.start +
+                    definition.textSpan.length
+                )
+            ) :
+            Range.create(
+                sourceFile.getLineAndCharacterOfPosition(definition.textSpan.start),
+                sourceFile.getLineAndCharacterOfPosition(
+                    definition.textSpan.start + definition.textSpan.length
+                )
+            )
         );
 
         return {

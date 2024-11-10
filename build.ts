@@ -186,7 +186,7 @@ async function build() {
         // Bundle server
         await esbuild.build({
             ...commonConfig,
-            entryPoints: ["src/server.ts"],
+            entryPoints: ["src/server/index.ts"],
             outfile: "build/server.js",
         });
 
