@@ -179,7 +179,7 @@ async function build() {
         // Bundle extension
         await esbuild.build({
             ...commonConfig,
-            entryPoints: ["src/extension.ts"],
+            entryPoints: ["src/extension/index.ts"],
             outfile: "build/extension.js",
         });
 
