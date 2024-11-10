@@ -295,6 +295,14 @@ export default class TypeScriptLanguageService {
         );
     }
 
+    getDefinitionAtPosition(fileName: string, position: number) {
+        return this.languageService?.getDefinitionAtPosition(fileName, position);
+    }
+
+    getTypeDefinitionAtPosition(fileName: string, position: number) {
+        return this.languageService?.getTypeDefinitionAtPosition(fileName, position);
+    }
+
     public dispose() {
         if (!this.languageService) {
             return;

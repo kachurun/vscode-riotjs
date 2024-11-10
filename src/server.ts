@@ -4,17 +4,22 @@ import {
     createConnection,
     TextDocuments,
     ProposedFeatures,
-    CompletionItem,
     TextDocumentSyncKind,
     MarkupKind,
+    Location,
+    Range
 } from "vscode-languageserver/node";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { getLanguageService as getHTMLLanguageService } from "vscode-html-languageservice";
 import { getCSSLanguageService } from "vscode-css-languageservice";
 import CompletionConverter from "./CompletionConverter";
 import TypeScriptLanguageService from "./TypeScriptLanguageService";
-import { LanguageClient, TransportKind } from "vscode-languageclient/node";
-import path from "path";
+
+import getDefinitions from "./server/getDefinitions";
+import isInsideTag from "./server/isInsideTag";
+import extractScriptContent from "./server/extractScriptContent";
+import updateRiotDocument from "./server/updateRiotDocument";
+import getUriFromPath from "./server/getUriFromPath";
 
 const connection = createConnection(ProposedFeatures.all);
 
@@ -54,33 +59,11 @@ connection.onInitialize((params) => {
                 resolveProvider: true,
                 triggerCharacters: ["<", " ", ":", "{", "."],
             },
-            hoverProvider: true
+            hoverProvider: true,
+            definitionProvider: true
         },
     };
 });
-
-function isInsideTag(document, position, tag) {
-    const text = document.getText();
-    const offset = document.offsetAt(position);
-    const beforeCursor = text.slice(0, offset);
-
-    const tagOpeningRegex = new RegExp(`<${tag}(?:\\s[^>]*)?>`, "gi");
-    const tagClosingRegex = new RegExp(`<\/${tag}>`, "gi");
-
-    let tagStart = -1;
-    let match;
-
-    while ((match = tagOpeningRegex.exec(beforeCursor)) !== null) {
-        tagStart = match.index + match[0].length;
-    }
-
-    if (tagStart === -1) return false;
-
-    const afterTagStart = text.slice(tagStart);
-    const tagEnd = afterTagStart.search(tagClosingRegex);
-
-    return tagEnd === -1 || offset < tagStart + tagEnd;
-}
 
 function isInsideScript(document, position) {
     return isInsideTag(document, position, "script");
@@ -100,31 +83,6 @@ function isInsideExpression(document, position) {
     return !!expressionMatch;
 }
 
-function extractScriptContent(document: TextDocument) {
-    const text = document.getText();
-    const scriptMatch = text.match(/<script[^>]*>([\s\S]*?)<\/script>/);
-    if (scriptMatch) {
-        const scriptContent = scriptMatch[1].trim();
-        const scriptOffset = text.indexOf(scriptContent);
-        return { content: scriptContent, offset: scriptOffset };
-    }
-    return { content: "", offset: 0 };
-}
-
-function updateRiotDocument(
-    document: TextDocument
-) {
-    const { content, offset } = extractScriptContent(document);
-    const url = new URL(document.uri);
-    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
-        url.pathname.slice(1) : url.pathname
-    );
-
-    tsLanguageService.updateDocument(filePath, content);
-
-    return { scriptOffset: offset };
-}
-
 function getCompletionsAndScriptOffset(
     document: TextDocument,
     position: Position
@@ -136,9 +94,11 @@ function getCompletionsAndScriptOffset(
             scriptOffset: { line: 0, character: 0 }
         };
     }
-    const { content, offset } = extractScriptContent(document);
+    const { filePath, scriptOffset } = updateRiotDocument(
+        document, tsLanguageService
+    );
 
-    if (!content) {
+    if (scriptOffset < 0) {
         connection.console.log("No script content found");
         return {
             completions: undefined,
@@ -146,12 +106,11 @@ function getCompletionsAndScriptOffset(
         };
     }
 
-    const adjustedRequestedOffset = document.offsetAt(position) - offset;
+    const adjustedRequestedOffset = (
+        document.offsetAt(position) - scriptOffset
+    );
 
     try {
-        const filePath = pathFromUri(document.uri);
-        tsLanguageService.updateDocument(filePath, content);
-
         // connection.console.log(
         //     `${content.substring(
         //         Math.max(0, adjustedRequestedOffset - 100),
@@ -171,7 +130,7 @@ function getCompletionsAndScriptOffset(
 
         return {
             completions,
-            scriptOffset: offset
+            scriptOffset
         };
     } catch (error) {
         connection.console.error(`Error in jsCompletion: ${error}`);
@@ -191,19 +150,20 @@ function getHoverInfo(
         connection.console.log("No Language Service");
         return null;
     }
-    const { content, offset } = extractScriptContent(document);
+    const { filePath, scriptOffset } = updateRiotDocument(
+        document, tsLanguageService
+    );
 
-    if (!content) {
+    if (scriptOffset < 0) {
         connection.console.log("No script content found");
         return null;
     }
 
-    const adjustedRequestedOffset = document.offsetAt(position) - offset;
+    const adjustedRequestedOffset = (
+        document.offsetAt(position) - scriptOffset
+    );
 
     try {
-        const filePath = pathFromUri(document.uri);
-        tsLanguageService.updateDocument(filePath, content);
-
         const quickInfo = tsLanguageService.getQuickInfoAtPosition(filePath, adjustedRequestedOffset);
 
         if (!quickInfo) {
@@ -318,7 +278,46 @@ connection.onHover((params) => {
         return getHoverInfo(document, params.position);
     }
     return null;
-})
+});
+
+
+connection.onDefinition(async (params) => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) {
+        return null;
+    }
+
+    if (!isInsideScript(document, params.position)) {
+        return null;
+    }
+
+    const definitions = getDefinitions({
+        document, position: params.position,
+        tsLanguageService, connection
+    }).map(({
+        path, range,
+        targetSelectionRange, originSelectionRange
+    }) => ({
+        uri: getUriFromPath(path),
+        range,
+        targetSelectionRange,
+        originSelectionRange
+    }));
+    if (definitions.length === 0) {
+        return null;
+    }
+
+    if (definitions.some(def => def.targetSelectionRange)) {
+        return definitions.map(def => ({
+            targetUri: def.uri,
+            targetRange: def.range,
+            targetSelectionRange: def.targetSelectionRange!,
+            originSelectionRange: def.originSelectionRange
+        }));
+    }
+
+    return definitions.map(def => Location.create(def.uri, def.range));
+});
 
 connection.onRequest('custom/logProgramFiles', async (params) => {
     const program = tsLanguageService.getProgram();
@@ -365,7 +364,9 @@ connection.onRequest('custom/logTypeAtCursor', async ({
         cursorPosition
     }, null, 2));
 
-    const { scriptOffset } = updateRiotDocument(document);
+    const { scriptOffset } = updateRiotDocument(
+        document, tsLanguageService
+    );
 
     const info = tsLanguageService.getQuickInfoAtPosition(
         filePath, cursorPosition - scriptOffset
