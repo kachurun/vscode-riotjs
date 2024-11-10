@@ -12,6 +12,7 @@ import TypeScriptLanguageService from "../TypeScriptLanguageService";
 import onCompletion from "./onCompletion";
 import onCompletionResolve from "./onCompletionResolve";
 import onDefinition from "./onDefinition";
+import onDidDocumentChangeContent from "./OnDidDocumentChangeContent";
 import onHover from "./onHover";
 import onInitialize from "./onInitialize";
 import onLogProgramFiles from "./onLogProgramFiles";
@@ -38,6 +39,8 @@ setState({
 });
 
 connection.onInitialize(onInitialize);
+
+documents.onDidChangeContent(onDidDocumentChangeContent);
 
 connection.onCompletion(onCompletion);
 

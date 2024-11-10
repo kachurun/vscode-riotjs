@@ -1,4 +1,5 @@
-import updateRiotDocument from "./updateRiotDocument";
+import scriptOffsetsMap from "./scriptOffsetsMap";
+import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
 
@@ -24,20 +25,8 @@ export default async function onLogTypeAtCursor({
         return;
     }
 
-    const url = new URL(document.uri);
-    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
-        url.pathname.slice(1) : url.pathname
-    );
-
-    connection.console.log(JSON.stringify({
-        uri,
-        filePath,
-        cursorPosition
-    }, null, 2));
-
-    const { scriptOffset } = updateRiotDocument(
-        document, tsLanguageService
-    );
+    const filePath = touchRiotDocument(document);
+    const scriptOffset = scriptOffsetsMap.get(filePath)!;
 
     const info = tsLanguageService.getQuickInfoAtPosition(
         filePath, cursorPosition - scriptOffset

@@ -238,9 +238,16 @@ export default class TypeScriptLanguageService {
         }
     }
 
+    public hasDocument(fileName: string) {
+        return this.documents.has(
+            this.normalizePath(fileName)
+        );
+    }
+
     public removeDocument(fileName: string) {
-        const normalizedFileName = this.normalizePath(fileName);
-        this.documents.delete(normalizedFileName);
+        this.documents.delete(
+            this.normalizePath(fileName)
+        );
     }
 
     public getCompletionsAtPosition(

@@ -6,7 +6,8 @@ import { createConnection } from "vscode-languageserver/node";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
-import updateRiotDocument from "./updateRiotDocument";
+import scriptOffsetsMap from "./scriptOffsetsMap";
+import touchRiotDocument from "./touchRiotDocument";
 
 namespace getHoverInfo {
     export type Args = {
@@ -28,9 +29,8 @@ export default function getHoverInfo(
         connection.console.log("No Language Service");
         return null;
     }
-    const { filePath, scriptOffset } = updateRiotDocument(
-        document, tsLanguageService
-    );
+    const filePath = touchRiotDocument(document);
+    const scriptOffset = scriptOffsetsMap.get(filePath)!;
 
     if (scriptOffset < 0) {
         connection.console.log("No script content found");

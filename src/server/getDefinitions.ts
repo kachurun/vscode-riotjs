@@ -1,8 +1,13 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import {
+    Range, Position,
+    createConnection
+} from 'vscode-languageserver/node';
+
 import TypeScriptLanguageService from '../TypeScriptLanguageService';
-import { Range, Position } from "vscode-languageserver";
-import { createConnection } from 'vscode-languageserver/node';
-import updateRiotDocument from './updateRiotDocument';
+
+import scriptOffsetsMap from './scriptOffsetsMap';
+import touchRiotDocument from './touchRiotDocument';
 
 interface DefinitionResult {
     path: string;
@@ -27,9 +32,8 @@ export default function getDefinitions(
         connection.console.log("No Language Service");
         return [];
     }
-    const { filePath, scriptOffset } = updateRiotDocument(
-        document, tsLanguageService
-    );
+    const filePath = touchRiotDocument(document);
+    const scriptOffset = scriptOffsetsMap.get(filePath)!;
 
     if (scriptOffset < 0) {
         connection.console.log("No script content found");

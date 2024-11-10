@@ -1,21 +1,27 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
-import TypeScriptLanguageService from "../TypeScriptLanguageService";
+
 import extractScriptContent from "./extractScriptContent";
+import getDocumentFilePath from "./getDocumentFilePath";
+import scriptOffsetsMap from "./scriptOffsetsMap";
+
+import { getState } from "./state";
 
 export default function updateRiotDocument(
-    document: TextDocument,
-    tsLanguageService: TypeScriptLanguageService
+    document: TextDocument
 ) {
-    const url = new URL(document.uri);
-    const filePath = decodeURIComponent(url.pathname.startsWith("/") ?
-        url.pathname.slice(1) : url.pathname
-    );
+    const {
+        tsLanguageService
+    } = getState();
+
+    const filePath = getDocumentFilePath(document);
 
     const { content, offset } = extractScriptContent(document);
     if (content == null) {
-        return { filePath, scriptOffset: -1 };
+        scriptOffsetsMap.set(filePath, -1);
+        return filePath;
     }
-
+    
     tsLanguageService.updateDocument(filePath, content);
-    return { filePath, scriptOffset: offset };
+    scriptOffsetsMap.set(filePath, offset);
+    return filePath;
 }
