@@ -39,8 +39,8 @@ export default class CompletionConverter {
         [ts.ScriptElementKind.string]: CompletionItemKind.Text,
     };
 
-    public static convert(completionInfo: ts.WithMetadata<ts.CompletionInfo> | undefined): CompletionList {
-        if (!completionInfo) {
+    public static convert(completionInfo: ts.WithMetadata<ts.CompletionInfo> | null): CompletionList {
+        if (completionInfo == null) {
             return {
                 isIncomplete: false,
                 items: []

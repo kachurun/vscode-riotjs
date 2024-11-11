@@ -35,7 +35,9 @@
       {
         "path": "./syntaxes/riotjs-expression.json",
         "scopeName": "source.riotjs.expression",
-        "injectTo": ["source.riotjs"]
+        "injectTo": [
+          "source.riotjs"
+        ]
       }
     ],
     "commands": [
@@ -84,6 +86,7 @@
     "package": "npm run build && npx --yes @vscode/vsce package --allow-missing-repository --skip-license"
   },
   "dependencies": {
+    "@riotjs/parser": "^5.0.1",
     "typescript": "^5.6.3",
     "vscode-css-languageservice": "^6.3.1",
     "vscode-html-languageservice": "^5.3.1",

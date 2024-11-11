@@ -1,10 +1,11 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import extractScriptContent from "./extractScriptContent";
+import parseContent from "../utils/riot-parser/parseContent";
+
 import getDocumentFilePath from "./getDocumentFilePath";
-import scriptOffsetsMap from "./scriptOffsetsMap";
 
 import { getState } from "./state";
+import parsedRiotDocuments from "./parsedRiotDocuments";
 
 export default function updateRiotDocument(
     document: TextDocument
@@ -15,13 +16,25 @@ export default function updateRiotDocument(
 
     const filePath = getDocumentFilePath(document);
 
-    const { content, offset } = extractScriptContent(document);
-    if (content == null) {
-        scriptOffsetsMap.set(filePath, -1);
-        return filePath;
+    try {
+        const parsedContent = parseContent(
+            document.getText()
+        );
+
+        if (parsedContent.output.javascript != null) {
+            tsLanguageService.updateDocument(
+                filePath,
+                parsedContent.output.javascript.text.text
+            );
+        } else {
+            tsLanguageService.removeDocument(filePath)
+        }
+        parsedRiotDocuments.set(filePath, parsedContent)
+    } catch (error) {
+        // here will be some diagnostics
+        tsLanguageService.removeDocument(filePath);
+        parsedRiotDocuments.delete(filePath);
     }
-    
-    tsLanguageService.updateDocument(filePath, content);
-    scriptOffsetsMap.set(filePath, offset);
+
     return filePath;
 }

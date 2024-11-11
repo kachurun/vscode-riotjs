@@ -1,5 +1,5 @@
-import extractScriptContent from "./extractScriptContent";
-import pathFromUri from "./pathFromUri";
+import parsedRiotDocuments from "./parsedRiotDocuments";
+import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
 
@@ -23,9 +23,23 @@ export default async function onLogScriptContent({
         return;
     }
 
-    const { content } = extractScriptContent(document);
+    const filePath = touchRiotDocument(document);
+    const parsedDocument = parsedRiotDocuments.get(filePath);
+
+    if (parsedDocument == null) {
+        connection.console.log("Couldn't parse riot component");
+        return;
+    }
+
+    if (parsedDocument.output.javascript == null) {
+        connection.console.log("<script> tag not found");
+        return;
+    }
+
     connection.console.log(
-        `Script content of "${pathFromUri(document.uri)}":\n` +
-        `\`\`\`\n${content}\n\`\`\`\n`
+        `Script content of "${filePath}":\n` +
+        `\`\`\`\n${
+            parsedDocument.output.javascript.text.text
+        }\n\`\`\`\n`
     );
 }

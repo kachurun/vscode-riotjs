@@ -6,8 +6,8 @@ import { createConnection } from "vscode-languageserver/node";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
-import scriptOffsetsMap from "./scriptOffsetsMap";
 import touchRiotDocument from "./touchRiotDocument";
+import parsedRiotDocuments from "./parsedRiotDocuments";
 
 namespace getHoverInfo {
     export type Args = {
@@ -30,15 +30,19 @@ export default function getHoverInfo(
         return null;
     }
     const filePath = touchRiotDocument(document);
-    const scriptOffset = scriptOffsetsMap.get(filePath)!;
+    const parsedDocument = parsedRiotDocuments.get(filePath);
 
-    if (scriptOffset < 0) {
+    if (
+        parsedDocument == null ||
+        parsedDocument.output.javascript == null
+    ) {
         connection.console.log("No script content found");
         return null;
     }
 
     const adjustedRequestedOffset = (
-        document.offsetAt(position) - scriptOffset
+        document.offsetAt(position) -
+        parsedDocument.output.javascript.text.start
     );
 
     try {
@@ -92,7 +96,7 @@ export default function getHoverInfo(
             }
         };
     } catch (error) {
-        connection.console.error(`Error in jsCompletion: ${error}`);
+        connection.console.error(`Error retrieving quick info: ${error}`);
         connection.console.error(`Error stack: ${error.stack}`);
         return null;
     }

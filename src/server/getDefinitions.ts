@@ -6,8 +6,8 @@ import {
 
 import TypeScriptLanguageService from '../TypeScriptLanguageService';
 
-import scriptOffsetsMap from './scriptOffsetsMap';
 import touchRiotDocument from './touchRiotDocument';
+import parsedRiotDocuments from './parsedRiotDocuments';
 
 interface DefinitionResult {
     path: string;
@@ -33,13 +33,17 @@ export default function getDefinitions(
         return [];
     }
     const filePath = touchRiotDocument(document);
-    const scriptOffset = scriptOffsetsMap.get(filePath)!;
+    const parsedDocument = parsedRiotDocuments.get(filePath);
 
-    if (scriptOffset < 0) {
+    if (
+        parsedDocument == null ||
+        parsedDocument.output.javascript == null
+    ) {
         connection.console.log("No script content found");
         return [];
     }
 
+    const scriptOffset = parsedDocument.output.javascript.text.start;
     const adjustedRequestedOffset = (
         document.offsetAt(position) - scriptOffset
     );

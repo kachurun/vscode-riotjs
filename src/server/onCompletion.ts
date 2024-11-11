@@ -4,11 +4,17 @@ import {
     CompletionParams,
     
 } from "vscode-languageserver/node";
-import { getState } from "./state";
-import isInsideScript from "../utils/isInsideScript";
-import getCompletionsAndScriptOffset from "./getCompletionAndScriptOffset";
+
 import CompletionConverter from "../CompletionConverter";
+
+import isInsideScript from "../utils/isInsideScript";
 import isInsideStyle from "../utils/isInsideStyle";
+
+import getCompletions from "./getCompletions";
+import parsedRiotDocuments from "./parsedRiotDocuments";
+import touchRiotDocument from "./touchRiotDocument";
+
+import { getState } from "./state";
 
 export default async function onCompletion(
     params: CompletionParams
@@ -28,20 +34,31 @@ export default async function onCompletion(
         return [];
     }
 
+    const filePath = touchRiotDocument(document);
+    const parsedDocument = parsedRiotDocuments.get(filePath);
+
     try {
         if (
-            isInsideScript(document, params.position)
+            isInsideScript(
+                document, params.position,
+                parsedDocument?.output || null
+            )
             // || isInsideExpression(document, textDocumentPosition.position)
         ) {
-            const { completions, scriptOffset } = getCompletionsAndScriptOffset({
+            const completions = getCompletions({
                 document, position: params.position,
                 tsLanguageService, connection
             });
 
-            // TODO: add scriptOffset to range of replacement
+            // TODO: add script offset to range of replacement
 
             return CompletionConverter.convert(completions);
-        } else if (isInsideStyle(document, params.position)) {
+        } else if (
+            isInsideStyle(
+                document, params.position,
+                parsedDocument?.output || null
+            )
+        ) {
 
             // TODO: should extract content from style tag, and remap position after completions
             // connection.console.log("Requested position is inside style");

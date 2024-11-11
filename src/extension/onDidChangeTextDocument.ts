@@ -16,11 +16,16 @@ export default async function onDidChangeTextDocument(
         return;
     }
 
+    /**
+     * should probably request to the server
+     * if the change was made inside
+     * script or style tags
+     */
     const change = event.contentChanges[0];
     if (
         change.text === ">" &&
-        !isInsideScript(editor.document, change.range.start) &&
-        !isInsideStyle(editor.document, change.range.start)
+        !isInsideScript(editor.document, change.range.start, null) &&
+        !isInsideStyle(editor.document, change.range.start, null)
     ) {
         await autoCloseTag(editor, change);
     }

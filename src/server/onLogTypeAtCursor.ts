@@ -1,7 +1,7 @@
-import scriptOffsetsMap from "./scriptOffsetsMap";
 import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
+import parsedRiotDocuments from "./parsedRiotDocuments";
 
 namespace onLogTypeAtCursor {
     export type Args = {
@@ -26,10 +26,21 @@ export default async function onLogTypeAtCursor({
     }
 
     const filePath = touchRiotDocument(document);
-    const scriptOffset = scriptOffsetsMap.get(filePath)!;
+    const parsedDocument = parsedRiotDocuments.get(filePath);
+
+    if (parsedDocument == null) {
+        connection.console.log("Couldn't parse riot component");
+        return;
+    }
+
+    if (parsedDocument.output.javascript == null) {
+        connection.console.log("<script> tag not found");
+        return;
+    }
 
     const info = tsLanguageService.getQuickInfoAtPosition(
-        filePath, cursorPosition - scriptOffset
+        filePath,
+        cursorPosition - parsedDocument.output.javascript.text.start
     );
     connection.console.log(`Type at ${cursorPosition}: ${
         // JSON.stringify(info, null, 2)

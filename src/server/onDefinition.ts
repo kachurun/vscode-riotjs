@@ -5,10 +5,14 @@ import {
     Location
 } from "vscode-languageserver/node";
 
-import { getState } from "./state";
 import isInsideScript from "../utils/isInsideScript";
+
 import getDefinitions from "./getDefinitions";
 import getUriFromPath from "./getUriFromPath";
+import parsedRiotDocuments from "./parsedRiotDocuments";
+import touchRiotDocument from "./touchRiotDocument";
+
+import { getState } from "./state";
 
 export default async function onDefinition(
     params: DefinitionParams
@@ -27,7 +31,13 @@ export default async function onDefinition(
         return null;
     }
 
-    if (!isInsideScript(document, params.position)) {
+    const filePath = touchRiotDocument(document);
+    const parsedDocument = parsedRiotDocuments.get(filePath);
+
+    if (!isInsideScript(
+        document, params.position,
+        parsedDocument?.output || null
+    )) {
         return null;
     }
 

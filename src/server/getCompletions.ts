@@ -6,10 +6,10 @@ import {
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
-import scriptOffsetsMap from "./scriptOffsetsMap";
 import touchRiotDocument from "./touchRiotDocument";
+import parsedRiotDocuments from "./parsedRiotDocuments";
 
-namespace getCompletionsAndScriptOffset {
+namespace getCompletions {
     export type Args = {
         document: TextDocument,
         position: Position,
@@ -18,33 +18,31 @@ namespace getCompletionsAndScriptOffset {
     };
 }
 
-export default function getCompletionsAndScriptOffset(
+export default function getCompletions(
     {
         document, position,
         tsLanguageService,
         connection
-    }: getCompletionsAndScriptOffset.Args
+    }: getCompletions.Args
 ) {
     if (tsLanguageService == null) {
         connection.console.log("No Language Service");
-        return {
-            completions: undefined,
-            scriptOffset: { line: 0, character: 0 }
-        };
+        return null;
     }
     const filePath = touchRiotDocument(document);
-    const scriptOffset = scriptOffsetsMap.get(filePath)!;
+    const parsedDocument = parsedRiotDocuments.get(filePath);
 
-    if (scriptOffset < 0) {
+    if (
+        parsedDocument == null ||
+        parsedDocument.output.javascript == null
+    ) {
         connection.console.log("No script content found");
-        return {
-            completions: undefined,
-            scriptOffset: { line: 0, character: 0 }
-        };
+        return null;
     }
 
     const adjustedRequestedOffset = (
-        document.offsetAt(position) - scriptOffset
+        document.offsetAt(position) -
+        parsedDocument.output.javascript.text.start
     );
 
     try {
@@ -65,16 +63,10 @@ export default function getCompletionsAndScriptOffset(
             connection.console.log(`No completions...`);
         }
 
-        return {
-            completions,
-            scriptOffset
-        };
+        return completions || null;
     } catch (error) {
         connection.console.error(`Error in jsCompletion: ${error}`);
         connection.console.error(`Error stack: ${error.stack}`);
-        return {
-            completions: undefined,
-            scriptOffset: { line: 0, character: 0 }
-        };
+        return null;
     }
 }
