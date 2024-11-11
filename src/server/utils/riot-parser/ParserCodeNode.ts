@@ -1,7 +1,7 @@
 import BaseParserNode from "./BaseParserNode";
 
 type ParserCodeNode = BaseParserNode & {
-    text: {
+    text?: {
         type: 3,
         text: string,
         start: number,

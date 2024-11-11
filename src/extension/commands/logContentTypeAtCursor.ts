@@ -2,7 +2,7 @@ import { window } from "vscode";
 
 import state from "../state";
 
-export default async function logTypeAtCursor() {
+export default async function logContentTypeAtCursor() {
     const editor = window.activeTextEditor;
     if (!editor || editor.document.languageId !== "riotjs") {
         return;
@@ -14,7 +14,7 @@ export default async function logTypeAtCursor() {
     }
 
     try {
-        await state.riotClient.sendRequest("custom/logTypeAtCursor", {
+        await state.riotClient.sendRequest("custom/logContentTypeAtCursor", {
             uri: editor.document.uri.toString(),
             cursorPosition: editor.document.offsetAt(
                 editor.selection.active

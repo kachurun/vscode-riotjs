@@ -1,24 +1,24 @@
-import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
+
+import parsedRiotDocuments from "./parsedRiotDocuments";
 
 import { getState } from "./state";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 
-namespace onLogTypeAtCursor {
+namespace onLogContentTypeAtCursor {
     export type Args = {
         uri: string,
         cursorPosition: number
     };
 }
 
-export default async function onLogTypeAtCursor({
+export default async function onLogContentTypeAtCursor({
     uri, cursorPosition
-}: onLogTypeAtCursor.Args) {
+}: onLogContentTypeAtCursor.Args) {
     const {
         connection,
-        documents,
-        tsLanguageService
+        documents
     } = getState();
 
     const document = documents.get(uri);
@@ -35,25 +35,16 @@ export default async function onLogTypeAtCursor({
         return;
     }
 
-    if (parsedDocument.output.javascript == null) {
-        connection.console.log("<script> tag not found");
-        return;
-    }
-
     const contentType = getContentTypeAtOffset(
         cursorPosition, parsedDocument
     );
-    if (contentType !== "javascript") {
-        connection.console.log("Cursor not in <script> tag");
+    if (contentType == null) {
+        connection.console.log(
+            `Couldn't determine content type at ${cursorPosition}`
+        );
         return;
     }
-
-    const info = tsLanguageService.getQuickInfoAtPosition(
-        filePath,
-        cursorPosition - parsedDocument.output.javascript.text!.start
+    connection.console.log(
+        `Content type at ${cursorPosition}: "${contentType}"`
     );
-    connection.console.log(`Type at ${cursorPosition}: ${
-        // JSON.stringify(info, null, 2)
-        info?.displayParts?.map(p => p.text).join('')
-    }`);
 }

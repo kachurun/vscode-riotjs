@@ -3,6 +3,7 @@ import {
     InitializeResult,
     TextDocumentSyncKind
 } from "vscode-languageserver/node";
+
 import { getState } from "./state";
 
 export default function onInitialize(

@@ -13,8 +13,10 @@ import onCompletion from "./onCompletion";
 import onCompletionResolve from "./onCompletionResolve";
 import onDefinition from "./onDefinition";
 import onDidDocumentChangeContent from "./OnDidDocumentChangeContent";
+import onGetContentTypeAtCursor from "./onGetContentTypeAtCursor";
 import onHover from "./onHover";
 import onInitialize from "./onInitialize";
+import onLogContentTypeAtCursor from "./onLogContentTypeAtCursor";
 import onLogProgramFiles from "./onLogProgramFiles";
 import onLogScriptContent from "./onLogScriptContent";
 import onLogTypeAtCursor from "./onLogTypeAtCursor";
@@ -51,16 +53,24 @@ connection.onHover(onHover);
 connection.onDefinition(onDefinition);
 
 connection.onRequest(
+    "custom/getContentTypeAtCursor",
+    onGetContentTypeAtCursor
+);
+connection.onRequest(
+    "custom/logContentTypeAtCursor",
+    onLogContentTypeAtCursor
+);
+connection.onRequest(
     "custom/logProgramFiles",
     onLogProgramFiles
 );
 connection.onRequest(
-    "custom/logTypeAtCursor",
-    onLogTypeAtCursor
-);
-connection.onRequest(
     "custom/logScriptContent",
     onLogScriptContent
+);
+connection.onRequest(
+    "custom/logTypeAtCursor",
+    onLogTypeAtCursor
 );
 
 connection.onShutdown(onShutdown);

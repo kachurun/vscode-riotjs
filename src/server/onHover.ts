@@ -3,16 +3,19 @@ import {
     HoverParams
 } from "vscode-languageserver/node";
 
-import isInsideScript from "../utils/isInsideScript";
-
 import getHoverInfo from "./getHoverInfo";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
 
+import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+
 export default function onHover(
-    params: HoverParams
+    {
+        textDocument,
+        position
+    }: HoverParams
 ): Hover | undefined | null {
     const {
         connection,
@@ -20,22 +23,33 @@ export default function onHover(
         tsLanguageService
     } = getState()
 
-    const document = documents.get(params.textDocument.uri);
+    const document = documents.get(textDocument.uri);
     if (!document) {
         return null;
     }
 
     const filePath = touchRiotDocument(document);
     const parsedDocument = parsedRiotDocuments.get(filePath);
-
-    if (isInsideScript(
-        document, params.position,
-        parsedDocument?.output || null
-    )) {
-        return getHoverInfo({
-            document, position: params.position,
-            tsLanguageService, connection
-        });
+    if (parsedDocument == null) {
+        return null;
     }
-    return null;
+
+    const contentType = getContentTypeAtOffset(
+        document.offsetAt(position), parsedDocument
+    );
+    if (contentType == null) {
+        return null;
+    }
+
+    switch (contentType) {
+        case "javascript": {
+            return getHoverInfo({
+                document, position: position,
+                tsLanguageService, connection
+            });
+        }
+        default: {
+            return null;
+        }
+    }
 }

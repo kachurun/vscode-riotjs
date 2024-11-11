@@ -1,6 +1,6 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import parseContent from "../utils/riot-parser/parseContent";
+import parseContent from "./utils/riot-parser/parseContent";
 
 import getDocumentFilePath from "./getDocumentFilePath";
 
@@ -21,7 +21,10 @@ export default function updateRiotDocument(
             document.getText()
         );
 
-        if (parsedContent.output.javascript != null) {
+        if (
+            parsedContent.output.javascript != null &&
+            parsedContent.output.javascript.text != null
+        ) {
             tsLanguageService.updateDocument(
                 filePath,
                 parsedContent.output.javascript.text.text

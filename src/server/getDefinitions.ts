@@ -37,7 +37,8 @@ export default function getDefinitions(
 
     if (
         parsedDocument == null ||
-        parsedDocument.output.javascript == null
+        parsedDocument.output.javascript == null ||
+        parsedDocument.output.javascript.text == null
     ) {
         connection.console.log("No script content found");
         return [];

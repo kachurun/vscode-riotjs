@@ -47,20 +47,26 @@
         "enablement": "editorTextFocus && editorLangId == riotjs"
       },
       {
+        "command": "riotjs.logContentTypeAtCursor",
+        "title": "Log Content Type at Cursor",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
         "command": "riotjs.logProgramFiles",
         "title": "Log Program Files",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       },
       {
-        "command": "riotjs.logTypeAtCursor",
-        "title": "Log Type At Cursor",
+        "command": "riotjs.logScriptContent",
+        "title": "Log Script Content",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       },
       {
-        "command": "riotjs.logScriptContent",
-        "title": "Log Script Content",
+        "command": "riotjs.logTypeAtCursor",
+        "title": "Log Type At Cursor",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       }

@@ -5,8 +5,6 @@ import {
     Location
 } from "vscode-languageserver/node";
 
-import isInsideScript from "../utils/isInsideScript";
-
 import getDefinitions from "./getDefinitions";
 import getUriFromPath from "./getUriFromPath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
@@ -14,8 +12,13 @@ import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
 
+import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+
 export default async function onDefinition(
-    params: DefinitionParams
+    {
+        textDocument,
+        position
+    }: DefinitionParams
 ): Promise<(
     Definition | DefinitionLink[] |
     undefined | null
@@ -26,23 +29,26 @@ export default async function onDefinition(
         tsLanguageService
     } = getState();
 
-    const document = documents.get(params.textDocument.uri);
+    const document = documents.get(textDocument.uri);
     if (!document) {
         return null;
     }
 
     const filePath = touchRiotDocument(document);
     const parsedDocument = parsedRiotDocuments.get(filePath);
+    if (parsedDocument == null) {
+        return null;
+    }
 
-    if (!isInsideScript(
-        document, params.position,
-        parsedDocument?.output || null
-    )) {
+    const contentType = getContentTypeAtOffset(
+        document.offsetAt(position), parsedDocument
+    )
+    if (contentType !== "javascript") {
         return null;
     }
 
     const definitions = getDefinitions({
-        document, position: params.position,
+        document, position: position,
         tsLanguageService, connection
     }).map(({
         path, range,

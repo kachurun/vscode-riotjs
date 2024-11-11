@@ -1,14 +1,20 @@
 import {
     commands,
-    ExtensionContext,
-    window
+    ExtensionContext
 } from "vscode";
 
+import logContentTypeAtCursor from "./commands/logContentTypeAtCursor";
 import logProgramFiles from "./commands/logProgramFiles";
-import logTypeAtCursor from "./commands/logTypeAtCursor";
 import logScriptContent from "./commands/logScriptContent";
+import logTypeAtCursor from "./commands/logTypeAtCursor";
 
 export default function registerCommands(context: ExtensionContext) {
+    context.subscriptions.push(
+        commands.registerCommand(
+            "riotjs.logContentTypeAtCursor",
+            logContentTypeAtCursor
+        )
+    );
     context.subscriptions.push(
         commands.registerCommand(
             "riotjs.logProgramFiles",
@@ -17,14 +23,14 @@ export default function registerCommands(context: ExtensionContext) {
     );
     context.subscriptions.push(
         commands.registerCommand(
-            "riotjs.logTypeAtCursor",
-            logTypeAtCursor
+            "riotjs.logScriptContent",
+            logScriptContent
         )
     );
     context.subscriptions.push(
         commands.registerCommand(
-            "riotjs.logScriptContent",
-            logScriptContent
+            "riotjs.logTypeAtCursor",
+            logTypeAtCursor
         )
     );
 }

@@ -1,5 +1,5 @@
-- when auto closing a tag check if it isn't already closed
 - add support for expression suggestions
+- when auto closing a tag check if it isn't already closed
 - add diagnostic with error underlying
 - add css suggestions
 - add inline style css suggestions

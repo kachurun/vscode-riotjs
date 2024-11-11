@@ -1,4 +1,5 @@
 import type { SourceFile } from "typescript";
+
 import { getState } from "./state";
 
 export default async function onLogProgramFiles() {

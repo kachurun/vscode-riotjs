@@ -4,14 +4,29 @@ import {
     Selection
 } from "vscode";
 
+import getContentTypeAtCursor from "./getContentTypeAtCursor";
+
 const openingTagRegex = /<(\w+)(?:\s+[^>]*)?$/;
 
 export default async function autoCloseTag(
     editor: TextEditor,
     change: TextDocumentContentChangeEvent
 ) {
+    if (change.text !== ">") {
+        return;
+    }
+
     const { document } = editor;
+
     const position = change.range.end;
+    const offset = document.offsetAt(position);
+
+    const contentType = await getContentTypeAtCursor(
+        document.uri.toString(), offset
+    );
+    if (contentType !== "template") {
+        return;
+    }
 
     const text = document.getText();
     const textBeforeCursor = text.substring(

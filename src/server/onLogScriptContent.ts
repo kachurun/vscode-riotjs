@@ -31,8 +31,11 @@ export default async function onLogScriptContent({
         return;
     }
 
-    if (parsedDocument.output.javascript == null) {
-        connection.console.log("<script> tag not found");
+    if (
+        parsedDocument.output.javascript == null ||
+        parsedDocument.output.javascript.text == null
+    ) {
+        connection.console.log("No script content found");
         return;
     }
 

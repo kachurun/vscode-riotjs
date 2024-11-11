@@ -20,7 +20,7 @@ export default async function activate(
         outputChannel.appendLine("Starting activation...");
 
         const serverModule = context.asAbsolutePath(
-            path.join('build', 'server.js')
+            path.join("build", "server.js")
         );
         outputChannel.appendLine(
             `Server module path: ${serverModule}`
