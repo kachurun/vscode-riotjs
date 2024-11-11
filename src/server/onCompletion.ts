@@ -7,6 +7,7 @@ import {
 
 import CompletionConverter from "../CompletionConverter";
 
+import isInsideExpression from "../utils/isInsideExpression";
 import isInsideScript from "../utils/isInsideScript";
 import isInsideStyle from "../utils/isInsideStyle";
 
@@ -43,7 +44,6 @@ export default async function onCompletion(
                 document, params.position,
                 parsedDocument?.output || null
             )
-            // || isInsideExpression(document, textDocumentPosition.position)
         ) {
             const completions = getCompletions({
                 document, position: params.position,
@@ -53,6 +53,14 @@ export default async function onCompletion(
             // TODO: add script offset to range of replacement
 
             return CompletionConverter.convert(completions);
+        } else if (
+            isInsideExpression(
+                document, params.position,
+                parsedDocument?.output || null
+            )
+        ) {
+            connection.console.log("Requested position is inside expression");
+            return null;
         } else if (
             isInsideStyle(
                 document, params.position,

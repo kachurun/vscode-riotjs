@@ -1,6 +1,6 @@
-import ParserNode from "./ParserNode";
+import BaseParserNode from "./BaseParserNode";
 
-type ParserCodeNode = Omit<ParserNode, "text" | "expressions" | "parts"> & {
+type ParserCodeNode = BaseParserNode & {
     text: {
         type: 3,
         text: string,

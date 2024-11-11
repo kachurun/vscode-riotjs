@@ -1,19 +1,10 @@
-import Attribute from "./Attribute";
+import BaseParserNode from "./BaseParserNode";
 import Expression from "./Expression";
 
-type ParserNode = {
-    type: number,
-    name: string,
-
-    start: number,
-    end: number,
-
+type ParserNode = BaseParserNode & {
     nodes?: Array<ParserNode>,
-    attributes?: Array<Attribute>,
 
     isCustom?: true,
-    isVoid?: true,
-    isSelfClosing?: true,
 
     text?: string,
     expressions?: Array<Expression>,
