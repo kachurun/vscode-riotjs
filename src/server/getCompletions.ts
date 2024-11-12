@@ -47,22 +47,7 @@ export default function getCompletions(
     );
 
     try {
-        // connection.console.log(
-        //     `${content.substring(
-        //         Math.max(0, adjustedRequestedOffset - 100),
-        //         adjustedRequestedOffset
-        //     )}|${content.substring(
-        //         adjustedRequestedOffset,
-        //         adjustedRequestedOffset + 100
-        //     )}`
-        // );
-        
         let completions = tsLanguageService.getCompletionsAtPosition(filePath, adjustedRequestedOffset);
-        if (completions) {
-            connection.console.log(`First 5 completions:\n${completions.entries.slice(0, 5).map(entry => JSON.stringify(entry, null, 2)).join("\n")}\n\n`);
-        } else {
-            connection.console.log(`No completions...`);
-        }
 
         return completions || null;
     } catch (error) {
