@@ -1,5 +1,6 @@
 - add support for expression suggestions
 - when auto closing a tag check if it isn't already closed
+- support tsconfig compiler options overwrite
 - add diagnostic with error underlying
 - add css suggestions
 - add inline style css suggestions
