@@ -266,7 +266,18 @@ export default class TypeScriptLanguageService {
                 includeCompletionsWithInsertText: true,
                 includeAutomaticOptionalChainCompletions: true,
                 includeCompletionsWithObjectLiteralMethodSnippets: true,
-                includeCompletionsWithClassMemberSnippets: true
+                includeCompletionsWithClassMemberSnippets: true,
+                includeCompletionsForImportStatements: true,
+                includeCompletionsWithSnippetText: true,
+                includeInlayEnumMemberValueHints: true,
+                includeInlayFunctionLikeReturnTypeHints: true,
+                includeInlayFunctionParameterTypeHints: true,
+                includeInlayParameterNameHints: "all",
+                includeInlayParameterNameHintsWhenArgumentMatchesName: true,
+                includeInlayPropertyDeclarationTypeHints: true,
+                includeInlayVariableTypeHints: true,
+                includeInlayVariableTypeHintsWhenTypeMatchesName: true,
+                includePackageJsonAutoImports: "on"
             }
         );
 
