@@ -13,10 +13,12 @@
   "contributes": {
     "languages": [
       {
-        "id": "riot",
+        "id": "riotjs",
         "aliases": [
           "RiotJS",
-          "riot"
+          "Riot.JS",
+          "riotjs",
+          "riot.js"
         ],
         "extensions": [
           ".riot"
@@ -26,34 +28,47 @@
     ],
     "grammars": [
       {
-        "language": "riot",
-        "scopeName": "source.riot",
-        "path": "./syntaxes/riot.tmLanguage.json"
+        "language": "riotjs",
+        "scopeName": "source.riotjs",
+        "path": "./syntaxes/riotjs.tmLanguage.json"
+      },
+      {
+        "path": "./syntaxes/riotjs-expression.json",
+        "scopeName": "source.riotjs.expression",
+        "injectTo": [
+          "source.riotjs"
+        ]
       }
     ],
     "commands": [
       {
         "command": "type",
         "title": "Type",
-        "enablement": "editorTextFocus && editorLangId == riot"
+        "enablement": "editorTextFocus && editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logContentTypeAtCursor",
+        "title": "Log Content Type at Cursor",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
       },
       {
         "command": "riotjs.logProgramFiles",
         "title": "Log Program Files",
         "category": "RiotJS",
-        "enablement": "editorLangId == riot"
-      },
-      {
-        "command": "riotjs.logTypeAtCursor",
-        "title": "Log Type At Cursor",
-        "category": "RiotJS",
-        "enablement": "editorLangId == riot"
+        "enablement": "editorLangId == riotjs"
       },
       {
         "command": "riotjs.logScriptContent",
         "title": "Log Script Content",
         "category": "RiotJS",
-        "enablement": "editorLangId == riot"
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logTypeAtCursor",
+        "title": "Log Type At Cursor",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
       }
     ],
     "configuration": {
@@ -77,6 +92,7 @@
     "package": "npm run build && npx --yes @vscode/vsce package --allow-missing-repository --skip-license"
   },
   "dependencies": {
+    "@riotjs/parser": "^5.0.1",
     "typescript": "^5.6.3",
     "vscode-css-languageservice": "^6.3.1",
     "vscode-html-languageservice": "^5.3.1",

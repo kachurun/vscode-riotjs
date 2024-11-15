@@ -1,5 +1,49 @@
 import * as ts from 'typescript';
-import { CompletionItemKind, CompletionList, CompletionItem } from 'vscode-languageserver-types';
+
+import { CompletionItemKind, CompletionList, CompletionItem, InsertTextFormat, InsertTextMode } from 'vscode-languageserver-types';
+
+function constructLabel(completionEntry: ts.CompletionEntry, label?: string) {
+    return `${
+        label ?? completionEntry.name
+    }${
+        (completionEntry.kindModifiers?.includes('optional') ? "?" : "")
+    }`;
+}
+
+function getCompletionEntryLabelAndLabelDetails(completionEntry: ts.CompletionEntry): {
+    label: string,
+    labelDetails: ts.CompletionEntryLabelDetails | undefined
+} {
+    if (completionEntry.labelDetails != null) {
+        return {
+            label: constructLabel(completionEntry),
+            labelDetails: completionEntry.labelDetails
+        }
+    }
+    const extractedName = completionEntry.sortText.match(/\u0000(.*)\u0000/);
+    if (extractedName == null) {
+        return {
+            label: constructLabel(completionEntry),
+            labelDetails: undefined
+        };
+    }
+    const label = extractedName[1];
+    const detailRegex = new RegExp(`^${label}(.*)$`);
+    const extractedDetail = completionEntry.name.match(detailRegex);
+    if (extractedDetail == null) {
+        return {
+            label: constructLabel(completionEntry),
+            labelDetails: undefined
+        };
+    }
+    return {
+        label: constructLabel(completionEntry, label),
+        labelDetails: {
+            detail: extractedDetail[1],
+            description: undefined
+        }
+    };
+}
 
 export default class CompletionConverter {
     private static kindMap: Record<string, CompletionItemKind> = {
@@ -39,8 +83,8 @@ export default class CompletionConverter {
         [ts.ScriptElementKind.string]: CompletionItemKind.Text,
     };
 
-    public static convert(completionInfo: ts.WithMetadata<ts.CompletionInfo> | undefined): CompletionList {
-        if (!completionInfo) {
+    public static convert(completionInfo: ts.WithMetadata<ts.CompletionInfo> | null): CompletionList {
+        if (completionInfo == null) {
             return {
                 isIncomplete: false,
                 items: []
@@ -49,15 +93,18 @@ export default class CompletionConverter {
 
         const items = completionInfo.entries.map(entry => {
             const item: CompletionItem = {
-                label: `${entry.name}${
-                    (entry.kindModifiers?.includes('optional') ? "?" : "")
-                }`,
+                ...getCompletionEntryLabelAndLabelDetails(entry),
+                detail: `(${entry.kind})`,
                 kind: this.kindMap[entry.kind] || CompletionItemKind.Text,
-                detail: entry.labelDetails?.detail,
                 documentation: undefined,
                 sortText: entry.sortText,
                 filterText: entry.filterText,
                 insertText: entry.insertText || entry.name,
+                insertTextFormat: (entry.isSnippet ?
+                    InsertTextFormat.Snippet :
+                    InsertTextFormat.PlainText
+                ),
+                insertTextMode: InsertTextMode.adjustIndentation,
                 // textEdit: entry.replacementSpan ? {
                 //     newText: entry.insertText || entry.name,
                 //     range: {

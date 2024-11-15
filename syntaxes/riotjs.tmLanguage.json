@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "RiotJS",
+  "scopeName": "source.riotjs",
+  "patterns": [
+    { "include": "#main-component" },
+    {
+      "match": "^[^<]*",
+      "name": "comment.block.html"
+    }
+  ],
+  "repository": {
+    "main-component": {
+      "begin": "\\s*(<)([\\w-]+)(?![\\w-])",
+      "beginCaptures": {
+        "0": { "name": "meta.tag.structure.any.html" },
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.html" }
+      },
+      "end": "(</)(\\2)(>)",
+      "endCaptures": {
+        "0": { "name": "meta.tag.structure.any.html" },
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.html" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "contentName": "text.plain",
+      "patterns": [
+        {
+          "begin": "(</)([\\w-]+)\\s*(>)",
+          "beginCaptures": {
+            "0": { "name": "meta.tag.structure.any.html" },
+            "1": { "name": "punctuation.definition.tag.begin.html" },
+            "2": { "name": "entity.name.tag.html" },
+            "3": { "name": "punctuation.definition.tag.end.html" }
+          },
+          "end": "^\\s*(?=</)",
+          "patterns": [
+            { "include": "source.riotjs.expression" },
+            { "include": "text.html.derivative" }
+          ]
+        },
+        {
+          "begin": "(?<!>)",
+          "end": "(>)",
+          "endCaptures": {
+            "0": { "name": "meta.tag.structure.any.html" },
+            "1": { "name": "punctuation.definition.tag.end.html" }
+          },
+          "patterns": [
+            { "include": "text.html.basic#attribute" }
+          ]
+        },
+        { 
+          "begin": "(?<=>)",
+          "end": "^\\s*(?=</)",
+          "patterns": [
+            { "include": "source.riotjs.expression" },
+            { "include": "text.html.derivative" }
+          ]
+        }
+      ]
+    }
+  }
+}

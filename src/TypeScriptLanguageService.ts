@@ -53,12 +53,7 @@ export default class TypeScriptLanguageService {
     private createServiceHost(compilerHost: ts.CompilerHost): ts.LanguageServiceHost {
         return {
             getScriptFileNames: () => Array.from(this.documents.keys()),
-            getScriptVersion: (fileName) => {
-                const normalizedFileName = this.normalizePath(fileName);
-                return (this.documents.has(normalizedFileName) ?
-                    `${this.documents.get(normalizedFileName)!.version}` : "0"
-                );
-            },
+            getScriptVersion: (fileName) => this.getScriptVersion(fileName),
             getScriptSnapshot: (fileName) => this.getFileSnapshot(fileName),
             getScriptKind: (fileName) => this.getScriptKind(fileName),
             getCurrentDirectory: () => this.currentDirectory,
@@ -106,6 +101,24 @@ export default class TypeScriptLanguageService {
             },
             getDirectories: compilerHost.getDirectories?.bind(compilerHost)
         };
+    }
+
+    private getScriptVersion(fileName: string): string {
+        const normalizedFileName = this.normalizePath(fileName);
+
+        if (this.documents.has(normalizedFileName)) {
+            return `${this.documents.get(normalizedFileName)!.version}`;
+        }
+
+        try {
+            if (fs.existsSync(normalizedFileName)) {
+                return fs.statSync(normalizedFileName).mtimeMs.toString();
+            }
+        } catch (e) {
+            console.warn(`Error accessing file ${normalizedFileName}:`, e);
+        }
+
+        return "0";
     }
 
     private getScriptKind(fileName: string): ts.ScriptKind {
@@ -225,9 +238,16 @@ export default class TypeScriptLanguageService {
         }
     }
 
+    public hasDocument(fileName: string) {
+        return this.documents.has(
+            this.normalizePath(fileName)
+        );
+    }
+
     public removeDocument(fileName: string) {
-        const normalizedFileName = this.normalizePath(fileName);
-        this.documents.delete(normalizedFileName);
+        this.documents.delete(
+            this.normalizePath(fileName)
+        );
     }
 
     public getCompletionsAtPosition(
@@ -246,7 +266,18 @@ export default class TypeScriptLanguageService {
                 includeCompletionsWithInsertText: true,
                 includeAutomaticOptionalChainCompletions: true,
                 includeCompletionsWithObjectLiteralMethodSnippets: true,
-                includeCompletionsWithClassMemberSnippets: true
+                includeCompletionsWithClassMemberSnippets: true,
+                includeCompletionsForImportStatements: true,
+                includeCompletionsWithSnippetText: true,
+                includeInlayEnumMemberValueHints: true,
+                includeInlayFunctionLikeReturnTypeHints: true,
+                includeInlayFunctionParameterTypeHints: true,
+                includeInlayParameterNameHints: "all",
+                includeInlayParameterNameHintsWhenArgumentMatchesName: true,
+                includeInlayPropertyDeclarationTypeHints: true,
+                includeInlayVariableTypeHints: true,
+                includeInlayVariableTypeHintsWhenTypeMatchesName: true,
+                includePackageJsonAutoImports: "on"
             }
         );
 
@@ -293,6 +324,14 @@ export default class TypeScriptLanguageService {
             this.normalizePath(fileName),
             position
         );
+    }
+
+    getDefinitionAtPosition(fileName: string, position: number) {
+        return this.languageService?.getDefinitionAtPosition(fileName, position);
+    }
+
+    getTypeDefinitionAtPosition(fileName: string, position: number) {
+        return this.languageService?.getTypeDefinitionAtPosition(fileName, position);
     }
 
     public dispose() {
