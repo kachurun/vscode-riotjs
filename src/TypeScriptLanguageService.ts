@@ -5,6 +5,11 @@ import * as fs from 'fs';
 interface ServiceOptions {
     currentDirectory?: string;
     compilerOptions?: ts.CompilerOptions;
+
+    documentsHandlers?: Array<{
+        extension: string,
+        requestDocument?: (fileName: string) => boolean
+    }>
 }
 
 export default class TypeScriptLanguageService {
@@ -16,6 +21,11 @@ export default class TypeScriptLanguageService {
     private libFolder: string;
     private currentDirectory: string;
     private compilerOptions: ts.CompilerOptions;
+
+    private documentsHandlers: Array<{
+        extension: string,
+        requestDocument?: (fileName: string) => boolean
+    }>;
 
     private static defaultCompilerOptions: ts.CompilerOptions = {
         target: ts.ScriptTarget.ESNext,
@@ -34,6 +44,8 @@ export default class TypeScriptLanguageService {
             ...TypeScriptLanguageService.defaultCompilerOptions,
             ...options.compilerOptions
         };
+
+        this.documentsHandlers = options.documentsHandlers || [];
 
         this.documents = new Map();
         this.libFolder = this.normalizePath(path.dirname(ts.sys.getExecutingFilePath()));
@@ -164,6 +176,19 @@ export default class TypeScriptLanguageService {
         if (this.documents.has(normalizedFileName)) {
             return true;
         }
+        const foundDocumentHandler = this.documentsHandlers.find(({
+            extension
+        }) => normalizedFileName.endsWith(extension));
+        if (
+            foundDocumentHandler != null &&
+            foundDocumentHandler.requestDocument != null
+        ) {
+            if (foundDocumentHandler.requestDocument.call(
+                null, normalizedFileName
+            )) {
+                return true;
+            }
+        }
 
         if (fs.existsSync(normalizedFileName)) {
             return true;
@@ -225,7 +250,6 @@ export default class TypeScriptLanguageService {
     }
 
     public updateDocument(fileName: string, content: string) {
-        console.log(`Updating document "${fileName}"`);
         const normalizedFileName = this.normalizePath(fileName);
         if (this.documents.has(normalizedFileName)) {
             const document = this.documents.get(normalizedFileName)!;
@@ -249,6 +273,9 @@ export default class TypeScriptLanguageService {
         this.documents.delete(
             this.normalizePath(fileName)
         );
+
+        // here should check if any other document
+        // is in the program just because of this one
     }
 
     public getSourceFile(fileName: string) {

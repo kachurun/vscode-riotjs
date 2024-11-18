@@ -13,6 +13,7 @@ import onCompletion from "./onCompletion";
 import onCompletionResolve from "./onCompletionResolve";
 import onDefinition from "./onDefinition";
 import onDidDocumentChangeContent from "./onDidDocumentChangeContent";
+import onDidDocumentClose from "./onDidDocumentClose";
 import onGetContentTypeAtCursor from "./onGetContentTypeAtCursor";
 import onHover from "./onHover";
 import onInitialize from "./onInitialize";
@@ -33,7 +34,17 @@ setState({
     connection,
     documents,
 
-    tsLanguageService: new TypeScriptLanguageService(),
+    tsLanguageService: new TypeScriptLanguageService({
+        documentsHandlers: [
+            {
+                extension: ".riot.d.ts",
+                requestDocument(fileName) {
+                    connection.console.log(`requesting "${fileName}"`)
+                    return false;
+                }
+            }
+        ]
+    }),
     htmlLanguageService: getHTMLLanguageService(),
     cssLanguageService: getCSSLanguageService(),
 
@@ -45,6 +56,7 @@ setState({
 connection.onInitialize(onInitialize);
 
 documents.onDidChangeContent(onDidDocumentChangeContent);
+documents.onDidClose(onDidDocumentClose);
 
 connection.onCompletion(onCompletion);
 
