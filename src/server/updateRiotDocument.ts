@@ -2,10 +2,11 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 
 import parseContent from "./utils/riot-parser/parseContent";
 
+import compiledComponents from "./compiledComponents";
 import getDocumentFilePath from "./getDocumentFilePath";
+import parsedRiotDocuments from "./parsedRiotDocuments";
 
 import { getState } from "./state";
-import parsedRiotDocuments from "./parsedRiotDocuments";
 
 export default function updateRiotDocument(
     document: TextDocument
@@ -32,12 +33,13 @@ export default function updateRiotDocument(
         } else {
             tsLanguageService.removeDocument(filePath)
         }
-        parsedRiotDocuments.set(filePath, parsedContent)
+        parsedRiotDocuments.set(filePath, parsedContent);
     } catch (error) {
         // here will be some diagnostics
         tsLanguageService.removeDocument(filePath);
         parsedRiotDocuments.delete(filePath);
     }
 
+    compiledComponents.delete(filePath);
     return filePath;
 }

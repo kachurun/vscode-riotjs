@@ -12,11 +12,13 @@ import TypeScriptLanguageService from "../TypeScriptLanguageService";
 import onCompletion from "./onCompletion";
 import onCompletionResolve from "./onCompletionResolve";
 import onDefinition from "./onDefinition";
-import onDidDocumentChangeContent from "./OnDidDocumentChangeContent";
+import onDidDocumentChangeContent from "./onDidDocumentChangeContent";
 import onGetContentTypeAtCursor from "./onGetContentTypeAtCursor";
 import onHover from "./onHover";
 import onInitialize from "./onInitialize";
+import onLogCompiledComponent from "./onLogCompiledComponent";
 import onLogContentTypeAtCursor from "./onLogContentTypeAtCursor";
+import onLogDeclaration from "./onLogDeclaration";
 import onLogProgramFiles from "./onLogProgramFiles";
 import onLogScriptContent from "./onLogScriptContent";
 import onLogTypeAtCursor from "./onLogTypeAtCursor";
@@ -57,8 +59,16 @@ connection.onRequest(
     onGetContentTypeAtCursor
 );
 connection.onRequest(
+    "custom/logCompiledComponent",
+    onLogCompiledComponent
+);
+connection.onRequest(
     "custom/logContentTypeAtCursor",
     onLogContentTypeAtCursor
+);
+connection.onRequest(
+    "custom/logDeclaration",
+    onLogDeclaration
 );
 connection.onRequest(
     "custom/logProgramFiles",

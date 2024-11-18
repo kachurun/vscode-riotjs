@@ -11,3 +11,19 @@ Typescript default compiler options:
     "strict": true
 }
 ```
+
+The type generation of the components currently supports only `export default` component style with the exported component wrapped in `withTypes` function.
+
+```html
+<component>
+    <!-- component markup -->
+
+    <script>
+        import { withTypes } from "riot";
+
+        export default withTypes({
+            // component implementation
+        })
+    </script>
+</component>
+```

@@ -24,6 +24,7 @@ export default class TypeScriptLanguageService {
         allowJs: true,
         checkJs: true,
         strict: true,
+        declaration: true,
         allowNonTsExtensions: true
     };
 
@@ -250,6 +251,12 @@ export default class TypeScriptLanguageService {
         );
     }
 
+    public getSourceFile(fileName: string) {
+        return this.getProgram().getSourceFile(
+            this.normalizePath(fileName)
+        );
+    }
+
     public getCompletionsAtPosition(
         fileName: string,
         position: number
@@ -344,6 +351,6 @@ export default class TypeScriptLanguageService {
     }
 
     public getProgram() {
-        return this.languageService?.getProgram();
+        return this.languageService?.getProgram()!;
     }
 }

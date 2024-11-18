@@ -3,7 +3,9 @@ import {
     ExtensionContext
 } from "vscode";
 
+import logCompiledComponent from "./commands/logCompiledComponent";
 import logContentTypeAtCursor from "./commands/logContentTypeAtCursor";
+import logDeclaration from "./commands/logDeclaration";
 import logProgramFiles from "./commands/logProgramFiles";
 import logScriptContent from "./commands/logScriptContent";
 import logTypeAtCursor from "./commands/logTypeAtCursor";
@@ -11,8 +13,20 @@ import logTypeAtCursor from "./commands/logTypeAtCursor";
 export default function registerCommands(context: ExtensionContext) {
     context.subscriptions.push(
         commands.registerCommand(
+            "riotjs.logCompiledComponent",
+            logCompiledComponent
+        )
+    );
+    context.subscriptions.push(
+        commands.registerCommand(
             "riotjs.logContentTypeAtCursor",
             logContentTypeAtCursor
+        )
+    );
+    context.subscriptions.push(
+        commands.registerCommand(
+            "riotjs.logDeclaration",
+            logDeclaration
         )
     );
     context.subscriptions.push(
