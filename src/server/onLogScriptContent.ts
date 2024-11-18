@@ -1,3 +1,4 @@
+import getDocumentFilePath from "./getDocumentFilePath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
@@ -19,30 +20,32 @@ export default async function onLogScriptContent({
 
     const document = documents.get(uri);
     if (!document) {
-        connection.console.log(`Document "${uri}" not found`);
+        connection.console.error(`Document "${uri}" not found`);
         return;
     }
 
-    const filePath = touchRiotDocument(document);
+    const filePath = getDocumentFilePath(document);
+    touchRiotDocument(filePath, () => document.getText());
     const parsedDocument = parsedRiotDocuments.get(filePath);
 
     if (parsedDocument == null) {
-        connection.console.log("Couldn't parse riot component");
+        connection.console.error("Couldn't parse riot component");
         return;
     }
 
+    const { result: parserResult } = parsedDocument;
     if (
-        parsedDocument.output.javascript == null ||
-        parsedDocument.output.javascript.text == null
+        parserResult.output.javascript == null ||
+        parserResult.output.javascript.text == null
     ) {
-        connection.console.log("No script content found");
+        connection.console.error("No script content found");
         return;
     }
 
     connection.console.log(
         `Script content of "${filePath}":\n` +
         `\`\`\`\n${
-            parsedDocument.output.javascript.text.text
+            parserResult.output.javascript.text.text
         }\n\`\`\`\n`
     );
 }

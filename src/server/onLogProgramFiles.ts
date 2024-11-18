@@ -10,7 +10,7 @@ export default async function onLogProgramFiles() {
 
     const program = tsLanguageService.getProgram();
     if (program == null) {
-        connection.console.log("No program");
+        connection.console.error("No program");
         return;
     }
 

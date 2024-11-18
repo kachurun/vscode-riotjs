@@ -29,7 +29,7 @@ function getInternalDeclaration(
         return null;
     }
 
-    if (parsedRiotDocument.output.javascript == null) {
+    if (parsedRiotDocument.result.output.javascript == null) {
         return basicRiotComponentDeclaration;
     }
     
@@ -44,14 +44,16 @@ function getInternalDeclaration(
 }
 
 export default function getComponentDeclaration(
-    document: TextDocument,
+    filePath: string,
+    getText: () => string,
     type: "INTERNAL" | "EXTERNAL"
 ): string | null {
     const {
         tsLanguageService
     } = getState();
 
-    const filePath = touchRiotDocument(document);
+    touchRiotDocument(filePath, getText);
+
     let internalDeclaration: string | null = null;
     if (componentDeclarations.has(filePath)) {
         const {

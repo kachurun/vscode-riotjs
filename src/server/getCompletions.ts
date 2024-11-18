@@ -11,8 +11,9 @@ import parsedRiotDocuments from "./parsedRiotDocuments";
 
 namespace getCompletions {
     export type Args = {
-        document: TextDocument,
-        position: Position,
+        filePath: string,
+        getText: () => string,
+        offset: number,
         tsLanguageService: TypeScriptLanguageService | null,
         connection: ReturnType<typeof createConnection>
     };
@@ -20,7 +21,9 @@ namespace getCompletions {
 
 export default function getCompletions(
     {
-        document, position,
+        filePath,
+        getText,
+        offset,
         tsLanguageService,
         connection
     }: getCompletions.Args
@@ -29,21 +32,25 @@ export default function getCompletions(
         connection.console.log("No Language Service");
         return null;
     }
-    const filePath = touchRiotDocument(document);
+    touchRiotDocument(filePath, getText);
     const parsedDocument = parsedRiotDocuments.get(filePath);
 
+    if (parsedDocument == null) {
+        connection.console.error("No script content found");
+        return null;
+    }
+
+    const { result: parserResult } = parsedDocument;
     if (
-        parsedDocument == null ||
-        parsedDocument.output.javascript == null ||
-        parsedDocument.output.javascript.text == null
+        parserResult.output.javascript == null ||
+        parserResult.output.javascript.text == null
     ) {
-        connection.console.log("No script content found");
+        connection.console.error("No script content found");
         return null;
     }
 
     const adjustedRequestedOffset = (
-        document.offsetAt(position) -
-        parsedDocument.output.javascript.text.start
+        offset - parserResult.output.javascript.text.start
     );
 
     try {

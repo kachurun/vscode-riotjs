@@ -4,14 +4,13 @@ import {
 } from "vscode-languageserver/node";
 
 import updateRiotDocument from "./updateRiotDocument";
-
-import { getState } from "./state";
+import getDocumentFilePath from "./getDocumentFilePath";
 
 export default function onDidDocumentChangeContent(
     event: TextDocumentChangeEvent<TextDocument>
 ) {
-    getState().connection.console.log(
-        `Document has changed: ${event.document.uri}`
+    updateRiotDocument(
+        getDocumentFilePath(event.document),
+        event.document.getText()
     );
-    updateRiotDocument(event.document);
 }

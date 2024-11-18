@@ -24,12 +24,15 @@ export default async function onLogDeclaration({
         return;
     }
 
+    const filePath = getDocumentFilePath(document);
     const componentDeclaration = getComponentDeclaration(
-        document, type
+        filePath, () => document.getText(), type
     );
 
     if (componentDeclaration == null) {
-        connection.console.error("Couldn't get component declaration");
+        connection.console.error(
+            `Couldn't get component declaration of "${filePath}"`
+        );
         return;
     }
 
@@ -37,7 +40,7 @@ export default async function onLogDeclaration({
         `${{
             "INTERNAL": "Internal",
             "EXTERNAL": "External"
-        }[type]} declaration of "${getDocumentFilePath(document)}":\n` +
+        }[type]} declaration of "${filePath}":\n` +
         `\`\`\`\n${componentDeclaration}\n\`\`\`\n`
     );
 }

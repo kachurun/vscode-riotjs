@@ -1,5 +1,3 @@
-import { Uri } from "vscode";
-
 export default function getUriFromPath(filePath: string) {
     let normalized = filePath.replace(/\\/g, '/');
 

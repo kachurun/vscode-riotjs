@@ -1,52 +1,66 @@
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import {
-    Range, Position,
-    createConnection
-} from 'vscode-languageserver/node';
+import { Range } from 'vscode-languageserver/node';
 
-import TypeScriptLanguageService from '../TypeScriptLanguageService';
-
-import touchRiotDocument from './touchRiotDocument';
 import parsedRiotDocuments from './parsedRiotDocuments';
+import touchRiotDocument from './touchRiotDocument';
 
-interface DefinitionResult {
-    path: string;
-    range: Range;
-    originSelectionRange?: Range;
-    targetSelectionRange?: Range;
+import { getState } from './state';
+
+namespace getDefinitions {
+    export type DefinitionResult = {
+        path: string;
+        range: Range;
+        originSelectionRange?: Range;
+        targetSelectionRange?: Range;
+    }
+
+    export type Args = {
+        filePath: string,
+        getText: () => string,
+        offset: number
+    };
 }
+
 
 export default function getDefinitions(
     {
-        document, position,
-        tsLanguageService,
-        connection
-    }:{
-        document: TextDocument,
-        position: Position,
-        tsLanguageService: TypeScriptLanguageService,
-        connection: ReturnType<typeof createConnection>
-    }
-): DefinitionResult[] {
+        filePath,
+        getText,
+        offset
+    }: getDefinitions.Args
+): getDefinitions.DefinitionResult[] {
+    const {
+        connection,
+        tsLanguageService
+    } = getState();
+
     if (tsLanguageService == null) {
-        connection.console.log("No Language Service");
+        connection.console.error("No Language Service");
         return [];
     }
-    const filePath = touchRiotDocument(document);
+    touchRiotDocument(filePath, getText);
     const parsedDocument = parsedRiotDocuments.get(filePath);
 
+    if (parsedDocument == null) {
+        connection.console.error("No script content found");
+        return [];
+    }
+    
+    const {
+        result: parserResult,
+        scriptPosition
+    } = parsedDocument;
     if (
-        parsedDocument == null ||
-        parsedDocument.output.javascript == null ||
-        parsedDocument.output.javascript.text == null
+        scriptPosition == null ||
+        parserResult.output.javascript == null ||
+        parserResult.output.javascript.text == null
     ) {
-        connection.console.log("No script content found");
+        connection.console.error("No script content found");
         return [];
     }
 
-    const scriptOffset = parsedDocument.output.javascript.text.start;
+    const scriptOffset = parserResult.output.javascript.text.start;
     const adjustedRequestedOffset = (
-        document.offsetAt(position) - scriptOffset
+        offset - scriptOffset
     );
 
     let definitions = tsLanguageService.getDefinitionAtPosition(
@@ -67,34 +81,47 @@ export default function getDefinitions(
 
     return definitions.map(definition => {
         const sourceFile = program.getSourceFile(definition.fileName);
-        if (!sourceFile) {
+        if (sourceFile == null) {
             return null;
         }
 
-        const range = (definition.fileName === filePath ?
-            Range.create(
-                document.positionAt(
-                    scriptOffset +
-                    definition.textSpan.start
-                ),
-                document.positionAt(
-                    scriptOffset +
-                    definition.textSpan.start +
-                    definition.textSpan.length
-                )
-            ) :
-            Range.create(
-                sourceFile.getLineAndCharacterOfPosition(definition.textSpan.start),
-                sourceFile.getLineAndCharacterOfPosition(
-                    definition.textSpan.start + definition.textSpan.length
-                )
-            )
+        const rangeStart = sourceFile.getLineAndCharacterOfPosition(
+            definition.textSpan.start
         );
+        const rangeEnd = sourceFile.getLineAndCharacterOfPosition(
+            definition.textSpan.start + definition.textSpan.length
+        );
+
+        let range: Range;
+        if (definition.fileName === filePath) {
+            range = Range.create(
+                {
+                    line: rangeStart.line + scriptPosition.line,
+                    character: (
+                        rangeStart.character +
+                        scriptPosition.character
+                    )
+                },
+                {
+                    line: rangeEnd.line + scriptPosition.line,
+                    character: (
+                        rangeEnd.character +
+                        scriptPosition.character
+                    )
+                }
+            );
+        } else {
+            range = Range.create(
+                rangeStart, rangeEnd
+            );
+        }
 
         return {
             path: definition.fileName,
             range,
             targetSelectionRange: range
-        } as DefinitionResult;
-    }).filter((def): def is DefinitionResult => def !== null);
+        } as getDefinitions.DefinitionResult;
+    }).filter((def): def is getDefinitions.DefinitionResult => {
+        return def !== null
+    });
 }

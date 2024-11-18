@@ -1,49 +1,55 @@
 import ts from "typescript";
 
 import { MarkupKind, Position } from "vscode-languageserver";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { createConnection } from "vscode-languageserver/node";
 
-import TypeScriptLanguageService from "../TypeScriptLanguageService";
-
-import touchRiotDocument from "./touchRiotDocument";
 import parsedRiotDocuments from "./parsedRiotDocuments";
+import touchRiotDocument from "./touchRiotDocument";
+
+import { getState } from "./state";
 
 namespace getHoverInfo {
     export type Args = {
-        document: TextDocument,
-        position: Position,
-        tsLanguageService: TypeScriptLanguageService | null,
-        connection: ReturnType<typeof createConnection>
+        filePath: string,
+        getText: () => string,
+        offset: number
     };
 }
 
 export default function getHoverInfo(
     {
-        document, position,
-        tsLanguageService,
-        connection
+        filePath,
+        getText,
+        offset
     }: getHoverInfo.Args
 ) {
+    const {
+        connection,
+        tsLanguageService
+    } = getState();
+
     if (tsLanguageService == null) {
         connection.console.log("No Language Service");
         return null;
     }
-    const filePath = touchRiotDocument(document);
+    touchRiotDocument(filePath, getText);
     const parsedDocument = parsedRiotDocuments.get(filePath);
 
+    if (parsedDocument == null) {
+        connection.console.error("No script content found");
+        return null;
+    }
+
+    const { result: parserResult } = parsedDocument;
     if (
-        parsedDocument == null ||
-        parsedDocument.output.javascript == null ||
-        parsedDocument.output.javascript.text == null
+        parserResult.output.javascript == null ||
+        parserResult.output.javascript.text == null
     ) {
-        connection.console.log("No script content found");
+        connection.console.error("No script content found");
         return null;
     }
 
     const adjustedRequestedOffset = (
-        document.offsetAt(position) -
-        parsedDocument.output.javascript.text.start
+        offset - parserResult.output.javascript.text.start
     );
 
     try {

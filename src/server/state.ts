@@ -13,7 +13,7 @@ type State = {
     connection: ReturnType<typeof createConnection>,
 
     documents: TextDocuments<TextDocument>,
-    
+
     tsLanguageService: TypeScriptLanguageService,
     htmlLanguageService: HTMLLanguageService,
     cssLanguageService: CSSLanguageService,

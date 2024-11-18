@@ -8,19 +8,20 @@ import touchRiotDocument from "./touchRiotDocument";
 import { getState } from "./state";
 
 export default function getCompiledComponent(
-    document: TextDocument
+    filePath: string,
+    getText: () => string
 ) {
-    const filePath = touchRiotDocument(document);
+    touchRiotDocument(filePath, getText);
     if (parsedRiotDocuments.get(filePath) == null) {
         return null;
     }
 
     try {
-        const compiledComponent = compile(document.getText());
+        const compiledComponent = compile(getText());
         compiledComponents.set(filePath, compiledComponent);
         return compiledComponent;
     } catch (error) {
-        getState().connection.console.log(`Error: ${error}`);
+        getState().connection.console.error(`Error: ${error}`);
     }
     return null;
 }

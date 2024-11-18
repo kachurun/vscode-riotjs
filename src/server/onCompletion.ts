@@ -1,13 +1,13 @@
 import {
     CompletionItem,
     CompletionList,
-    CompletionParams,
-    
+    CompletionParams
 } from "vscode-languageserver/node";
 
 import CompletionConverter from "../CompletionConverter";
 
 import getCompletions from "./getCompletions";
+import getDocumentFilePath from "./getDocumentFilePath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
@@ -33,7 +33,8 @@ export default async function onCompletion(
         return null;
     }
 
-    const filePath = touchRiotDocument(document);
+    const filePath = getDocumentFilePath(document);
+    touchRiotDocument(filePath, () => document.getText());
     const parsedDocument = parsedRiotDocuments.get(filePath);
     if (parsedDocument == null) {
         return null;
@@ -42,7 +43,9 @@ export default async function onCompletion(
     const offset = document.offsetAt(params.position);
 
     try {
-        const contentType = getContentTypeAtOffset(offset, parsedDocument);
+        const contentType = getContentTypeAtOffset(
+            offset, parsedDocument.result
+        );
         if (contentType == null) {
             return null;
         }
@@ -50,7 +53,9 @@ export default async function onCompletion(
         switch (contentType) {
             case "javascript": {
                 const completions = getCompletions({
-                    document, position: params.position,
+                    filePath,
+                    getText: () => document.getText(),
+                    offset,
                     tsLanguageService, connection
                 });
 

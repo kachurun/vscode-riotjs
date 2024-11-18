@@ -5,12 +5,12 @@ import parsedRiotDocuments from "./parsedRiotDocuments";
 import updateRiotDocument from "./updateRiotDocument";
 
 export default function touchRiotDocument(
-    document: TextDocument
+    filePath: string,
+    getText: () => string
 ) {
-    const filePath = getDocumentFilePath(document);
     if (parsedRiotDocuments.has(filePath)) {
         return filePath;
     }
 
-    return updateRiotDocument(document);
+    return updateRiotDocument(filePath, getText());
 }

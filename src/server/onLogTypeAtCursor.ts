@@ -1,3 +1,4 @@
+import getDocumentFilePath from "./getDocumentFilePath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
@@ -23,34 +24,37 @@ export default async function onLogTypeAtCursor({
 
     const document = documents.get(uri);
     if (!document) {
-        connection.console.log(`Document "${uri}" not found`);
+        connection.console.error(`Document "${uri}" not found`);
         return;
     }
 
-    const filePath = touchRiotDocument(document);
+    const filePath = getDocumentFilePath(document);
+    touchRiotDocument(filePath, () => document.getText());
     const parsedDocument = parsedRiotDocuments.get(filePath);
 
     if (parsedDocument == null) {
-        connection.console.log("Couldn't parse riot component");
+        connection.console.error("Couldn't parse riot component");
         return;
     }
 
-    if (parsedDocument.output.javascript == null) {
-        connection.console.log("<script> tag not found");
+    const { result: parserResult } = parsedDocument;
+
+    if (parserResult.output.javascript == null) {
+        connection.console.error("<script> tag not found");
         return;
     }
 
     const contentType = getContentTypeAtOffset(
-        cursorPosition, parsedDocument
+        cursorPosition, parserResult
     );
     if (contentType !== "javascript") {
-        connection.console.log("Cursor not in <script> tag");
+        connection.console.error("Cursor not in <script> tag");
         return;
     }
 
     const info = tsLanguageService.getQuickInfoAtPosition(
         filePath,
-        cursorPosition - parsedDocument.output.javascript.text!.start
+        cursorPosition - parserResult.output.javascript.text!.start
     );
     connection.console.log(`Type at ${cursorPosition}: ${
         // JSON.stringify(info, null, 2)

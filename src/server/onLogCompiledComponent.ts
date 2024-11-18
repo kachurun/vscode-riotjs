@@ -23,7 +23,10 @@ export default async function onLogCompiledComponent({
         return;
     }
 
-    const compiledComponent = getCompiledComponent(document);
+    const filePath = getDocumentFilePath(document);
+    const compiledComponent = getCompiledComponent(
+        filePath, () => document.getText()
+    );
 
     if (compiledComponent == null) {
         connection.console.error("Couldn't parse riot component");
@@ -31,7 +34,7 @@ export default async function onLogCompiledComponent({
     }
 
     connection.console.log(
-        `Compiled component of "${getDocumentFilePath(document)}":\n` +
+        `Compiled component of "${filePath}":\n` +
         `\`\`\`\n${compiledComponent.code}\n\`\`\`\n`
     );
 }

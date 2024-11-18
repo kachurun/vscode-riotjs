@@ -6,6 +6,7 @@ import {
 } from "vscode-languageserver/node";
 
 import getDefinitions from "./getDefinitions";
+import getDocumentFilePath from "./getDocumentFilePath";
 import getUriFromPath from "./getUriFromPath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
@@ -34,22 +35,26 @@ export default async function onDefinition(
         return null;
     }
 
-    const filePath = touchRiotDocument(document);
+    const filePath = getDocumentFilePath(document);
+    touchRiotDocument(filePath, () => document.getText());
     const parsedDocument = parsedRiotDocuments.get(filePath);
     if (parsedDocument == null) {
         return null;
     }
 
+    const offset = document.offsetAt(position);
+
     const contentType = getContentTypeAtOffset(
-        document.offsetAt(position), parsedDocument
+        offset, parsedDocument.result
     )
     if (contentType !== "javascript") {
         return null;
     }
 
     const definitions = getDefinitions({
-        document, position: position,
-        tsLanguageService, connection
+        filePath,
+        getText: () => document.getText(),
+        offset
     }).map(({
         path, range,
         targetSelectionRange, originSelectionRange
