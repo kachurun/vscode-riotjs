@@ -7,6 +7,7 @@ import getDocumentFilePath from "./getDocumentFilePath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 
 import { getState } from "./state";
+import componentDeclarations from "./componentDeclarations";
 
 export default function updateRiotDocument(
     document: TextDocument
@@ -40,6 +41,7 @@ export default function updateRiotDocument(
         parsedRiotDocuments.delete(filePath);
     }
 
+    componentDeclarations.delete(filePath);
     compiledComponents.delete(filePath);
     return filePath;
 }

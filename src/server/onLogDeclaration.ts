@@ -1,32 +1,21 @@
-import getDeclarationOfSourceFile from "./getDeclarationOfSourceFile";
-import parsedRiotDocuments from "./parsedRiotDocuments";
-import touchRiotDocument from "./touchRiotDocument";
+import getComponentDeclaration from "./getComponentDeclaration";
+import getDocumentFilePath from "./getDocumentFilePath";
 
 import { getState } from "./state";
 
 namespace onLogDeclaration {
     export type Args = {
-        uri: string
+        uri: string,
+        type: "INTERNAL" | "EXTERNAL"
     };
 }
 
-const basicRiotComponentDeclaration = [
-    `declare const _default: import("riot").RiotComponentWrapper<(`,
-    `    import("riot").RiotComponent<Record<string, any>, {`,
-    `        [x: string]: any;`,
-    `        [x: symbol]: any;`,
-    `    }>`,
-    `)>;`,
-    `export default _default;`
-].join("\n");
-
 export default async function onLogDeclaration({
-    uri
+    uri, type
 }: onLogDeclaration.Args) {
     const {
         connection,
-        documents,
-        tsLanguageService
+        documents
     } = getState();
 
     const document = documents.get(uri);
@@ -35,29 +24,20 @@ export default async function onLogDeclaration({
         return;
     }
 
-    const filePath = touchRiotDocument(document);
-    const parsedRiotDocument = parsedRiotDocuments.get(filePath);
-    if (parsedRiotDocument == null) {
-        connection.console.error(`Document "${uri}" cannot be parsed`);
+    const componentDeclaration = getComponentDeclaration(
+        document, type
+    );
+
+    if (componentDeclaration == null) {
+        connection.console.error("Couldn't get component declaration");
         return;
     }
 
-    if (parsedRiotDocument.output.javascript == null) {
-        connection.console.log(`Document "${uri}" declaration:\n${basicRiotComponentDeclaration}`);
-        return;
-    }
-    
-    const sourceFile = tsLanguageService.getSourceFile(filePath);
-    if (sourceFile == null) {
-        connection.console.log(`Document "${uri}" declaration:\n${basicRiotComponentDeclaration}`);
-        return;
-    }
-    
-    const declaration = getDeclarationOfSourceFile(sourceFile, tsLanguageService.getProgram());
-    if (declaration == null) {
-        connection.console.log(`Document "${uri}" declaration:\n${basicRiotComponentDeclaration}`);
-        return;
-    }
-
-    connection.console.log(`Document "${uri}" declaration:\n${declaration}`);
+    connection.console.log(
+        `${{
+            "INTERNAL": "Internal",
+            "EXTERNAL": "External"
+        }[type]} declaration of "${getDocumentFilePath(document)}":\n` +
+        `\`\`\`\n${componentDeclaration}\n\`\`\`\n`
+    );
 }

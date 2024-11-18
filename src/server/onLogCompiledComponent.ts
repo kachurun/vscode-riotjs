@@ -31,7 +31,7 @@ export default async function onLogCompiledComponent({
     }
 
     connection.console.log(
-        `Script content of "${getDocumentFilePath(document)}":\n` +
+        `Compiled component of "${getDocumentFilePath(document)}":\n` +
         `\`\`\`\n${compiledComponent.code}\n\`\`\`\n`
     );
 }

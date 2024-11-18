@@ -25,8 +25,14 @@ export default function registerCommands(context: ExtensionContext) {
     );
     context.subscriptions.push(
         commands.registerCommand(
-            "riotjs.logDeclaration",
-            logDeclaration
+            "riotjs.logExternalDeclaration",
+            () => logDeclaration("EXTERNAL")
+        )
+    );
+    context.subscriptions.push(
+        commands.registerCommand(
+            "riotjs.logInternalDeclaration",
+            () => logDeclaration("INTERNAL")
         )
     );
     context.subscriptions.push(

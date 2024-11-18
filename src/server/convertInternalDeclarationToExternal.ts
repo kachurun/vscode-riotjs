@@ -1,42 +1,11 @@
-import * as ts from 'typescript';
-import { getState } from './state';
-
-import { parse, print, types } from "recast";
 import * as tsParser from "recast/parsers/typescript";
 
-export default function getDeclarationOfSourceFile(
-    sourceFile: ts.SourceFile,
-    program: ts.Program
+import { parse, print, types } from "recast";
+
+export default function convertInternalDeclarationToExternal(
+    internalDeclaration: string
 ): string | null {
-    const { connection: { console } } = getState();
-    let declarationText: string | null = null;
-    const emitResult = program.emit(
-        sourceFile,
-        (fileName, text) => {
-            declarationText = text;
-        },
-        undefined,
-        true,
-        undefined
-    );
-
-    if (emitResult.diagnostics.length > 0) {
-        console.error(
-            ts.formatDiagnosticsWithColorAndContext(emitResult.diagnostics, {
-                getCanonicalFileName: (fileName) => fileName,
-                getCurrentDirectory: ts.sys.getCurrentDirectory,
-                getNewLine: () => ts.sys.newLine,
-            })
-        );
-        return null;
-    }
-
-    if (declarationText == null) {
-        console.error(`Couldn't generate declaration`);
-        return null;
-    }
-
-    const ast = parse(declarationText, {
+    const ast = parse(internalDeclaration, {
         parser: tsParser
     });
     const exportDefaultDeclaration = ast.program.body.find(statement => {
@@ -79,10 +48,12 @@ export default function getDeclarationOfSourceFile(
         return null;
     }
 
-    defaultDeclaration.typeAnnotation.typeAnnotation = types.builders.tsImportType(
-        types.builders.stringLiteral("riot"),
-        types.builders.identifier("RiotComponentWrapper"),
-        types.builders.tsTypeParameterInstantiation([
+    const { builders } = types;
+
+    defaultDeclaration.typeAnnotation.typeAnnotation = builders.tsImportType(
+        builders.stringLiteral("riot"),
+        builders.identifier("RiotComponentWrapper"),
+        builders.tsTypeParameterInstantiation([
             defaultDeclaration.typeAnnotation.typeAnnotation
         ])
     );

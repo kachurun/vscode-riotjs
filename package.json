@@ -59,8 +59,14 @@
         "enablement": "editorLangId == riotjs"
       },
       {
-        "command": "riotjs.logDeclaration",
-        "title": "Log Declaration",
+        "command": "riotjs.logExternalDeclaration",
+        "title": "Log External Declaration",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logInternalDeclaration",
+        "title": "Log Internal Declaration",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       },
