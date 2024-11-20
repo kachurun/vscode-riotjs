@@ -52,6 +52,13 @@ export default function updateRiotDocument(
         parsedRiotDocuments.delete(filePath);
     }
 
+    [
+        ...tsLanguageService.getRootFilesDependantOf(filePath),
+        ...tsLanguageService.getRootFilesDependantOf(`${filePath}.d.ts`)
+    ].forEach(rootFilePath => {
+        componentDeclarations.delete(rootFilePath);
+    });
+
     componentDeclarations.delete(filePath);
     compiledComponents.delete(filePath);
     return filePath;

@@ -19,7 +19,8 @@ namespace TypeScriptLanguageService {
 }
 
 class TypeScriptLanguageService {
-    private languageService: ts.LanguageService | null = null;
+    private languageService: ts.LanguageService;
+    private program: ts.Program | null = null;
     private documents = new Map<string, {
         content: string,
         version: number
@@ -31,7 +32,7 @@ class TypeScriptLanguageService {
     private documentsHandlers: Array<TypeScriptLanguageService.DocumentsHandler>;
 
     private dependencies = new Map<string, Set<string>>();
-    private mutedScripts: Set<string> | null = null;
+    private mutedScripts: Set<string>= new Set();
 
     private static defaultCompilerOptions: ts.CompilerOptions = {
         target: ts.ScriptTarget.ESNext,
@@ -65,11 +66,16 @@ class TypeScriptLanguageService {
     private createLanguageService(): ts.LanguageService {
         const compilerHost = ts.createCompilerHost(this.compilerOptions);
         const servicesHost = this.createServiceHost(compilerHost);
-        return ts.createLanguageService(servicesHost);
+
+        const languageService = ts.createLanguageService(servicesHost);
+        languageService.getProgram = ((getProgram) => () => {
+            return this.program = getProgram.call(languageService);
+        })(languageService.getProgram);
+
+        return languageService;
     }
 
     private createServiceHost(compilerHost: ts.CompilerHost): ts.LanguageServiceHost {
-        const filePathToTemporarlyOmit = new Map<string, number>();
         return {
             getScriptFileNames: () => {
                 const rootFileNames = Array.from(
@@ -299,9 +305,9 @@ class TypeScriptLanguageService {
         return libFileName;
     }
 
-    public muteDependantRootFiles(
+    public getScriptsDependantOf(
         fileName: string,
-        dependantScripts: Set<string> = this.mutedScripts ?? new Set(),
+        dependantScripts: Set<string> = new Set(),
         shouldIncludeItself = false
     ) {
         const normalizedFileName = this.normalizePath(fileName);
@@ -309,22 +315,36 @@ class TypeScriptLanguageService {
             if (!deps.has(normalizedFileName)) {
                 return;
             }
+
             if (dependantScripts.has(script)) {
                 return;
             }
-            this.muteDependantRootFiles(script, dependantScripts, true);
+
+            this.getScriptsDependantOf(script, dependantScripts, true);
             dependantScripts.add(script);
         });
 
         if (!shouldIncludeItself) {
             dependantScripts.delete(fileName);
         }
-        
-        this.mutedScripts = dependantScripts;
+
+        return dependantScripts;
+    }
+
+    public getRootFilesDependantOf(fileName: string) {
+        const dependantsScripts = this.getScriptsDependantOf(fileName);
+
+        return new Set(
+            Array.from(dependantsScripts).filter(script => this.documents.has(script))
+        );
+    }
+
+    public muteDependantRootFiles(fileName: string) {
+        this.mutedScripts = this.getScriptsDependantOf(fileName);
     }
 
     public unmuteAll() {
-        this.mutedScripts = null;
+        this.mutedScripts.clear();
     }
 
     public updateDocument(fileName: string, content: string) {
@@ -357,7 +377,7 @@ class TypeScriptLanguageService {
     }
 
     public getSourceFile(fileName: string) {
-        return this.getProgram().getSourceFile(
+        return this.languageService.getProgram()!.getSourceFile(
             this.normalizePath(fileName)
         );
     }
@@ -366,9 +386,6 @@ class TypeScriptLanguageService {
         fileName: string,
         position: number
     ) {
-        if (this.languageService == null) {
-            return undefined;
-        }
         const normalizedFileName = this.normalizePath(fileName);
         const completionInfo = this.languageService.getCompletionsAtPosition(
             normalizedFileName,
@@ -447,16 +464,18 @@ class TypeScriptLanguageService {
     }
 
     public dispose() {
-        if (!this.languageService) {
-            return;
-        }
+        this.program = null;
         this.languageService.dispose();
         this.documents.clear();
-        this.languageService = null;
+        this.dependencies.clear();
+        this.mutedScripts?.clear();
     }
 
     public getProgram() {
-        return this.languageService?.getProgram()!;
+        if (this.program == null) {
+            this.languageService!.getProgram();
+        }
+        return this.program!;
     }
 }
 

@@ -21,7 +21,6 @@ const RiotDeclarationDocumentsHandler: (
         );
     },
     getDocumentContent(filePath) {
-        console.log("requested content");
         const baseFilePath = filePath.replace(/.d.ts$/, "");
         
         const baseFileURI = URI.file(baseFilePath).toString();
@@ -29,11 +28,9 @@ const RiotDeclarationDocumentsHandler: (
         const baseDocument = getDocument(baseFileURI);
         const baseFileExists = existsSync(baseFilePath);
         if (baseDocument == null && !baseFileExists) {
-            console.log("base file not found");
             return undefined;
         }
-        
-        console.log("getting declaration");
+
         const declaration = getComponentDeclaration(
             baseFilePath,
             () => {
@@ -48,14 +45,11 @@ const RiotDeclarationDocumentsHandler: (
             },
             "EXTERNAL"
         );
-        console.log("found declaration");
         return declaration ?? undefined;
     },
     getDocumentVersion(filePath) {
-        console.log("requested version");
         const baseFilePath = filePath.replace(/.d.ts$/, "");
         const version = this.getScriptVersion(baseFilePath);
-        console.log("version", version);
         return version;
     },
 };

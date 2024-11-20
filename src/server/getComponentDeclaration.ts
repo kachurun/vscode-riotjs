@@ -70,11 +70,9 @@ export default function getComponentDeclaration(
     }
 
     if (internalDeclaration == null) {
-        console.log("getting internal declaration", filePath);
         internalDeclaration = getInternalDeclaration(
             filePath, tsLanguageService
         );
-        console.log("internal declaration got", filePath);
     }
 
     if (internalDeclaration == null) {
