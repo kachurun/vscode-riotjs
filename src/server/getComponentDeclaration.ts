@@ -1,22 +1,17 @@
-import { TextDocument } from "vscode-languageserver-textdocument";
-
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
 import componentDeclarations from "./componentDeclarations";
+import convertInternalDeclarationToExternal from "./convertInternalDeclarationToExternal";
 import getInternalDeclarationOfSourceFile from "./getInternalDeclarationOfSourceFile";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
-import convertInternalDeclarationToExternal from "./convertInternalDeclarationToExternal";
 
 const basicRiotComponentDeclaration = [
-    `declare const _default: import("riot").RiotComponentWrapper<(`,
-    `    import("riot").RiotComponent<Record<string, any>, {`,
-    `        [x: string]: any;`,
-    `        [x: symbol]: any;`,
-    `    }>`,
-    `)>;`,
+    `declare const _default: import("riot").RiotComponent<`,
+    `    Record<PropertyKey, any>, Record<PropertyKey, any>`,
+    `>;`,
     `export default _default;`
 ].join("\n");
 
@@ -32,15 +27,20 @@ function getInternalDeclaration(
     if (parsedRiotDocument.result.output.javascript == null) {
         return basicRiotComponentDeclaration;
     }
-    
+
+    tsLanguageService.muteDependantRootFiles(filePath);
+    tsLanguageService.muteDependantRootFiles(`${filePath}.d.ts`);
     const sourceFile = tsLanguageService.getSourceFile(filePath);
     if (sourceFile == null) {
+        tsLanguageService.unmuteAll();
         return basicRiotComponentDeclaration
     }
-    
-    return getInternalDeclarationOfSourceFile(
+
+    const internalDeclaration = getInternalDeclarationOfSourceFile(
         sourceFile, tsLanguageService.getProgram()
     ) || basicRiotComponentDeclaration;
+    tsLanguageService.unmuteAll();
+    return internalDeclaration;
 }
 
 export default function getComponentDeclaration(
@@ -70,9 +70,11 @@ export default function getComponentDeclaration(
     }
 
     if (internalDeclaration == null) {
+        console.log("getting internal declaration", filePath);
         internalDeclaration = getInternalDeclaration(
             filePath, tsLanguageService
         );
+        console.log("internal declaration got", filePath);
     }
 
     if (internalDeclaration == null) {

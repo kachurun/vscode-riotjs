@@ -2,19 +2,25 @@ import * as ts from 'typescript';
 import * as path from 'path';
 import * as fs from 'fs';
 
-interface ServiceOptions {
-    currentDirectory?: string;
-    compilerOptions?: ts.CompilerOptions;
-
-    documentsHandlers?: Array<{
+namespace TypeScriptLanguageService {
+    export type DocumentsHandler = {
         extension: string,
-        requestDocument?: (fileName: string) => boolean
-    }>
+        doesFileExists: (this: TypeScriptLanguageService, filePath: string) => boolean,
+        getDocumentContent: (this: TypeScriptLanguageService, filePath: string) => string | undefined,
+        getDocumentVersion: (this: TypeScriptLanguageService, filePath: string) => any
+    }
+
+    export type ServiceOptions = {
+        currentDirectory?: string;
+        compilerOptions?: ts.CompilerOptions;
+
+        documentsHandlers?: Array<DocumentsHandler>
+    }
 }
 
-export default class TypeScriptLanguageService {
+class TypeScriptLanguageService {
     private languageService: ts.LanguageService | null = null;
-    private documents: Map<string, {
+    private documents = new Map<string, {
         content: string,
         version: number
     }>;
@@ -22,10 +28,10 @@ export default class TypeScriptLanguageService {
     private currentDirectory: string;
     private compilerOptions: ts.CompilerOptions;
 
-    private documentsHandlers: Array<{
-        extension: string,
-        requestDocument?: (fileName: string) => boolean
-    }>;
+    private documentsHandlers: Array<TypeScriptLanguageService.DocumentsHandler>;
+
+    private dependencies = new Map<string, Set<string>>();
+    private mutedScripts: Set<string> | null = null;
 
     private static defaultCompilerOptions: ts.CompilerOptions = {
         target: ts.ScriptTarget.ESNext,
@@ -38,7 +44,7 @@ export default class TypeScriptLanguageService {
         allowNonTsExtensions: true
     };
 
-    constructor(options: ServiceOptions = {}) {
+    constructor(options: TypeScriptLanguageService.ServiceOptions = {}) {
         this.currentDirectory = this.normalizePath(options.currentDirectory ?? process.cwd());
         this.compilerOptions = {
             ...TypeScriptLanguageService.defaultCompilerOptions,
@@ -47,7 +53,6 @@ export default class TypeScriptLanguageService {
 
         this.documentsHandlers = options.documentsHandlers || [];
 
-        this.documents = new Map();
         this.libFolder = this.normalizePath(path.dirname(ts.sys.getExecutingFilePath()));
         console.log({ libFolder: this.libFolder });
         this.languageService = this.createLanguageService();
@@ -64,8 +69,19 @@ export default class TypeScriptLanguageService {
     }
 
     private createServiceHost(compilerHost: ts.CompilerHost): ts.LanguageServiceHost {
+        const filePathToTemporarlyOmit = new Map<string, number>();
         return {
-            getScriptFileNames: () => Array.from(this.documents.keys()),
+            getScriptFileNames: () => {
+                const rootFileNames = Array.from(
+                    this.documents.keys()
+                );
+                if (this.mutedScripts != null) {
+                    return rootFileNames.filter(fileName => {
+                        return !this.mutedScripts!.has(fileName);
+                    });
+                }
+                return rootFileNames;
+            },
             getScriptVersion: (fileName) => this.getScriptVersion(fileName),
             getScriptSnapshot: (fileName) => this.getFileSnapshot(fileName),
             getScriptKind: (fileName) => this.getScriptKind(fileName),
@@ -84,40 +100,68 @@ export default class TypeScriptLanguageService {
                 );
                 return results.map(result => this.normalizePath(result));
             },
+            // resolveModuleNameLiterals(moduleLiterals, containingFile, redirectedReference, options, containingSourceFile, reusedNames) {
+            //     console.log(containingFile);
+            //     return moduleLiterals.map(({ text }) => {
+            //         console.log(`resolve module literal "${text}"`);
+            //         const result = ts.resolveModuleName(
+            //             text,
+            //             containingFile,
+            //             this.compilerOptions,
+            //             {
+            //                 fileExists: fileName => this.doesFileExist(fileName),
+            //                 readFile: fileName => this.readFileContent(fileName),
+            //             }
+            //         );
+            
+            //         return result;
+            //     });
+            // },
             resolveModuleNames: (moduleNames, containingFile, _, __, options) => {
-                return moduleNames.map(moduleName => {
+                const dependencies = new Set<string>();
+                const resolvedModules = moduleNames.map(moduleName => {
                     const result = ts.resolveModuleName(
                         moduleName,
                         containingFile,
                         this.compilerOptions,
                         {
-                            fileExists: fileName => this.doesFileExist(fileName),
-                            readFile: fileName => this.readFileContent(fileName),
+                            fileExists: fileName => {
+                                const doesFileExists = this.doesFileExist(fileName);
+                                if (doesFileExists) {
+                                    dependencies.add(fileName);
+                                }
+                                return doesFileExists;
+                            },
+                            readFile: fileName => {
+                                return this.readFileContent(fileName)
+                            },
                         }
                     );
                     
                     return result.resolvedModule;
-                    // console.log(`Module "${moduleName}" not resolved`);
-    
-                    // // Fall back to trying to resolve relative to the containing file
-                    // const candidate = path.join(path.dirname(containingFile), moduleName);
-                    // if (this.doesFileExist(candidate)) {
-                    //     return {
-                    //         resolvedFileName: candidate,
-                    //         isExternalLibraryImport: false,
-                    //         extension: path.extname(candidate) as ts.Extension
-                    //     };
-                    // }
-    
-                    // return undefined;
                 });
+                this.dependencies.set(
+                    containingFile, dependencies
+                );
+
+                return resolvedModules;
             },
             getDirectories: compilerHost.getDirectories?.bind(compilerHost)
         };
     }
 
-    private getScriptVersion(fileName: string): string {
+    getScriptVersion(fileName: string): string {
         const normalizedFileName = this.normalizePath(fileName);
+
+        const foundDocumentHandler = this.documentsHandlers.find(({
+            extension
+        }) => normalizedFileName.endsWith(extension));
+        if (foundDocumentHandler != null) {
+            const version = foundDocumentHandler.getDocumentVersion.call(this, normalizedFileName);
+            if (version != null) {
+                return version;
+            }
+        }
 
         if (this.documents.has(normalizedFileName)) {
             return `${this.documents.get(normalizedFileName)!.version}`;
@@ -173,21 +217,17 @@ export default class TypeScriptLanguageService {
     private doesFileExist(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
 
-        if (this.documents.has(normalizedFileName)) {
-            return true;
-        }
         const foundDocumentHandler = this.documentsHandlers.find(({
             extension
         }) => normalizedFileName.endsWith(extension));
-        if (
-            foundDocumentHandler != null &&
-            foundDocumentHandler.requestDocument != null
-        ) {
-            if (foundDocumentHandler.requestDocument.call(
-                null, normalizedFileName
-            )) {
+        if (foundDocumentHandler != null) {
+            if (foundDocumentHandler.doesFileExists.call(this, normalizedFileName)) {
                 return true;
             }
+        }
+
+        if (this.documents.has(normalizedFileName)) {
+            return true;
         }
 
         if (fs.existsSync(normalizedFileName)) {
@@ -200,6 +240,16 @@ export default class TypeScriptLanguageService {
 
     private readFileContent(fileName: string) {
         const normalizedFileName = this.normalizePath(fileName);
+
+        const foundDocumentHandler = this.documentsHandlers.find(({
+            extension
+        }) => normalizedFileName.endsWith(extension));
+        if (foundDocumentHandler != null) {
+            const content = foundDocumentHandler.getDocumentContent.call(this, normalizedFileName);
+            if (content != null) {
+                return content;
+            }
+        }
 
         // Check in-memory documents
         const inMemoryDocument = this.documents.get(normalizedFileName);
@@ -247,6 +297,34 @@ export default class TypeScriptLanguageService {
         }
 
         return libFileName;
+    }
+
+    public muteDependantRootFiles(
+        fileName: string,
+        dependantScripts: Set<string> = this.mutedScripts ?? new Set(),
+        shouldIncludeItself = false
+    ) {
+        const normalizedFileName = this.normalizePath(fileName);
+        this.dependencies.forEach((deps, script) => {
+            if (!deps.has(normalizedFileName)) {
+                return;
+            }
+            if (dependantScripts.has(script)) {
+                return;
+            }
+            this.muteDependantRootFiles(script, dependantScripts, true);
+            dependantScripts.add(script);
+        });
+
+        if (!shouldIncludeItself) {
+            dependantScripts.delete(fileName);
+        }
+        
+        this.mutedScripts = dependantScripts;
+    }
+
+    public unmuteAll() {
+        this.mutedScripts = null;
     }
 
     public updateDocument(fileName: string, content: string) {
@@ -381,3 +459,5 @@ export default class TypeScriptLanguageService {
         return this.languageService?.getProgram()!;
     }
 }
+
+export default TypeScriptLanguageService;

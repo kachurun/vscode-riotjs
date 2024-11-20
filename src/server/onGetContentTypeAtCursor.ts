@@ -1,3 +1,4 @@
+import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
@@ -17,11 +18,10 @@ export default async function onGetContentTypeAtCursor({
     uri, cursorPosition
 }: onGetContentTypeAtCursor.Args) {
     const {
-        connection,
-        documents
+        connection
     } = getState();
 
-    const document = documents.get(uri);
+    const document = getDocument(uri);
     if (!document) {
         connection.console.error(`Document "${uri}" not found`);
         return null;

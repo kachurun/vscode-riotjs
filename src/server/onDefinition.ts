@@ -6,12 +6,11 @@ import {
 } from "vscode-languageserver/node";
 
 import getDefinitions from "./getDefinitions";
+import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import getUriFromPath from "./getUriFromPath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
-
-import { getState } from "./state";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 
@@ -24,13 +23,7 @@ export default async function onDefinition(
     Definition | DefinitionLink[] |
     undefined | null
 )> {
-    const {
-        connection,
-        documents,
-        tsLanguageService
-    } = getState();
-
-    const document = documents.get(textDocument.uri);
+    const document = getDocument(textDocument.uri);
     if (!document) {
         return null;
     }

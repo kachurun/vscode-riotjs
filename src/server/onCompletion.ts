@@ -7,6 +7,7 @@ import {
 import CompletionConverter from "../CompletionConverter";
 
 import getCompletions from "./getCompletions";
+import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
@@ -28,7 +29,7 @@ export default async function onCompletion(
         htmlLanguageService
     } = getState()
 
-    const document = documents.get(params.textDocument.uri);
+    const document = getDocument(params.textDocument.uri);
     if (!document) {
         return null;
     }

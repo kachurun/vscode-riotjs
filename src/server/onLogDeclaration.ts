@@ -1,4 +1,5 @@
 import getComponentDeclaration from "./getComponentDeclaration";
+import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 
 import { getState } from "./state";
@@ -14,11 +15,10 @@ export default async function onLogDeclaration({
     uri, type
 }: onLogDeclaration.Args) {
     const {
-        connection,
-        documents
+        connection
     } = getState();
 
-    const document = documents.get(uri);
+    const document = getDocument(uri);
     if (!document) {
         connection.console.error(`Document "${uri}" not found`);
         return;

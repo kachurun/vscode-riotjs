@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+
 import { getState } from './state';
 
 export default function getInternalDeclarationOfSourceFile(
@@ -7,15 +8,18 @@ export default function getInternalDeclarationOfSourceFile(
 ): string | null {
     const { connection: { console } } = getState();
     let declarationText: string | null = null;
+    console.log("program emit");
     const emitResult = program.emit(
         sourceFile,
         (fileName, text) => {
+            console.log(`program write ${fileName}`);
             declarationText = text;
         },
         undefined,
         true,
         undefined
     );
+    console.log("program emitted");
 
     if (emitResult.diagnostics.length > 0) {
         console.error(

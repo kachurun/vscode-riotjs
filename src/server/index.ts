@@ -24,6 +24,7 @@ import onLogProgramFiles from "./onLogProgramFiles";
 import onLogScriptContent from "./onLogScriptContent";
 import onLogTypeAtCursor from "./onLogTypeAtCursor";
 import onShutdown from "./onShutdown";
+import RiotDeclarationDocumentsHandler from "./RiotDeclarationDocumentsHandler";
 
 import { setState } from "./state";
 
@@ -36,13 +37,7 @@ setState({
 
     tsLanguageService: new TypeScriptLanguageService({
         documentsHandlers: [
-            {
-                extension: ".riot.d.ts",
-                requestDocument(fileName) {
-                    connection.console.log(`requesting "${fileName}"`)
-                    return false;
-                }
-            }
+            RiotDeclarationDocumentsHandler
         ]
     }),
     htmlLanguageService: getHTMLLanguageService(),

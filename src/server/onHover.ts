@@ -3,12 +3,11 @@ import {
     HoverParams
 } from "vscode-languageserver/node";
 
+import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import getHoverInfo from "./getHoverInfo";
 import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
-
-import { getState } from "./state";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 
@@ -18,11 +17,7 @@ export default function onHover(
         position
     }: HoverParams
 ): Hover | undefined | null {
-    const {
-        documents
-    } = getState()
-
-    const document = documents.get(textDocument.uri);
+    const document = getDocument(textDocument.uri);
     if (!document) {
         return null;
     }

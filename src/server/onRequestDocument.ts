@@ -1,31 +1,40 @@
-import { readFileSync } from "fs";
-import { TextDocument } from "vscode-languageserver-textdocument";
+import { existsSync, readFileSync } from "fs";
 import { URI } from "vscode-uri";
 
 import { getState } from "./state";
+import getComponentDeclaration from "./getComponentDeclaration";
 
 export default function onRequestDocument(filePath: string) {
     const {
-        connection,
-        documents
+        documents,
+        tsLanguageService
     } = getState()
 
-    const uri = URI.file(filePath).toString();
+    const baseFilePath = filePath.replace(/.d.ts$/, "");
 
-    // theoretically the following should always be false
-    if (documents.get(uri)) {
-        return true;
+    const baseFileURI = URI.file(baseFilePath).toString();
+
+    const baseDocument = documents.get(baseFileURI);
+    const baseFileExists = existsSync(baseFilePath);
+    if (baseDocument == null && !baseFileExists) {
+        return false;
     }
 
-    try {
-        const content = readFileSync(filePath, { encoding: "utf-8" });
-
-        const document = TextDocument.create(
-            uri, "riotjs", 0, content
-        );
-    
-        return true;
-    } catch (error) {
-        connection.console.error(error.toString());
+    const declaration = getComponentDeclaration(
+        baseFilePath,
+        () => {
+            if (baseDocument != null) {
+                return baseDocument.getText()
+            } else {
+                return readFileSync(baseFilePath, { encoding: "utf-8" });
+            }
+        },
+        "EXTERNAL"
+    );
+    if (declaration == null) {
+        return false;
     }
+
+    tsLanguageService.updateDocument(filePath, declaration);
+    return true;
 }
