@@ -32,7 +32,7 @@ class TypeScriptLanguageService {
     private documentsHandlers: Array<TypeScriptLanguageService.DocumentsHandler>;
 
     private dependencies = new Map<string, Set<string>>();
-    private mutedScripts: Set<string>= new Set();
+    private allowedScripts: Set<string> | null = null;
 
     private static defaultCompilerOptions: ts.CompilerOptions = {
         target: ts.ScriptTarget.ESNext,
@@ -81,9 +81,9 @@ class TypeScriptLanguageService {
                 const rootFileNames = Array.from(
                     this.documents.keys()
                 );
-                if (this.mutedScripts != null) {
+                if (this.allowedScripts != null) {
                     return rootFileNames.filter(fileName => {
-                        return !this.mutedScripts!.has(fileName);
+                        return this.allowedScripts!.has(fileName);
                     });
                 }
                 return rootFileNames;
@@ -305,6 +305,52 @@ class TypeScriptLanguageService {
         return libFileName;
     }
 
+    public getFullDependenciesOf(
+        script: string,
+        fullDependenciesOfScript = new Set<string>()
+    ) {
+        script = this.normalizePath(script);
+        if (!this.dependencies.has(script)) {
+            return new Set<string>();
+        }
+
+        this.dependencies.get(script)!.forEach(dependency => {
+            if (fullDependenciesOfScript.has(dependency)) {
+                return;
+            }
+            fullDependenciesOfScript.add(dependency);
+            const dependenciesOfDependency = this.getFullDependenciesOf(
+                dependency, fullDependenciesOfScript
+            );
+            dependenciesOfDependency.forEach(dependencyOfDependency => {
+                if (
+                    dependencyOfDependency == script ||
+                    fullDependenciesOfScript.has(dependencyOfDependency)
+                ) {
+                    return;
+                }
+                fullDependenciesOfScript.add(dependencyOfDependency);
+            });
+        });
+        return fullDependenciesOfScript;
+    }
+
+    public restrictProgramToScripts(
+        scripts: Array<string>
+    ) {
+        this.allowedScripts = new Set();
+        scripts.forEach(script => {
+            this.allowedScripts!.add(script);
+            this.getFullDependenciesOf(script).forEach(dependency => {
+                this.allowedScripts!.add(dependency);
+            });
+        });
+    }
+
+    public clearProgramRestriction() {
+        this.allowedScripts = null;
+    }
+
     public getScriptsDependantOf(
         fileName: string,
         dependantScripts: Set<string> = new Set(),
@@ -337,14 +383,6 @@ class TypeScriptLanguageService {
         return new Set(
             Array.from(dependantsScripts).filter(script => this.documents.has(script))
         );
-    }
-
-    public muteDependantRootFiles(fileName: string) {
-        this.mutedScripts = this.getScriptsDependantOf(fileName);
-    }
-
-    public unmuteAll() {
-        this.mutedScripts.clear();
     }
 
     public updateDocument(fileName: string, content: string) {
@@ -468,7 +506,7 @@ class TypeScriptLanguageService {
         this.languageService.dispose();
         this.documents.clear();
         this.dependencies.clear();
-        this.mutedScripts?.clear();
+        this.allowedScripts?.clear();
     }
 
     public getProgram() {

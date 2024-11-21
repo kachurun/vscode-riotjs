@@ -28,18 +28,19 @@ function getInternalDeclaration(
         return basicRiotComponentDeclaration;
     }
 
-    tsLanguageService.muteDependantRootFiles(filePath);
-    tsLanguageService.muteDependantRootFiles(`${filePath}.d.ts`);
+    tsLanguageService.restrictProgramToScripts(
+        [ filePath, `${filePath}.d.ts` ]
+    );
     const sourceFile = tsLanguageService.getSourceFile(filePath);
     if (sourceFile == null) {
-        tsLanguageService.unmuteAll();
+        tsLanguageService.clearProgramRestriction();
         return basicRiotComponentDeclaration
     }
 
     const internalDeclaration = getInternalDeclarationOfSourceFile(
         sourceFile, tsLanguageService.getProgram()
     ) || basicRiotComponentDeclaration;
-    tsLanguageService.unmuteAll();
+    tsLanguageService.clearProgramRestriction();
     return internalDeclaration;
 }
 
