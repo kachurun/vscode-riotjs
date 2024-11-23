@@ -18,7 +18,7 @@ The type generation of the components currently supports only `export default` c
 <component>
     <!-- component markup -->
 
-    <script>
+    <script lang='ts'>
         import { withTypes } from "riot";
 
         export default withTypes({
