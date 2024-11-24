@@ -3,7 +3,7 @@ import { Position } from "vscode-languageserver-textdocument"
 
 import TypeScriptLanguageService from "../../TypeScriptLanguageService";
 
-import getInternalDeclarationOfSourceFile from "../component-analyzer/getInternalDeclarationOfSourceFile";
+import getInternalDeclarationOfSourceFile from "../features/ts/getInternalDeclarationOfSourceFile";
 
 import convertInternalDeclarationToExternal from "../utils/convertInternalDeclarationToExternal";
 

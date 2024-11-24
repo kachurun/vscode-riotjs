@@ -3,8 +3,9 @@ import { URI } from "vscode-uri";
 
 import TypeScriptLanguageService from "../../TypeScriptLanguageService";
 
-import getComponentDeclaration from "../component-analyzer/getComponentDeclaration";
 import getDocument from "../core/getDocument";
+
+import getComponentDeclaration from "../features/riot/getComponentDeclaration";
 
 const RiotDeclarationDocumentsHandler: (
     TypeScriptLanguageService.DocumentsHandler

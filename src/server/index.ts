@@ -11,25 +11,25 @@ import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
 import { setState } from "./core/state";
 
-import onGetContentTypeAtCursor from "./custom-handlers/onGetContentTypeAtCursor";
+import onGetContentTypeAtCursor from "./handlers/custom/onGetContentTypeAtCursor";
 
-import onDidDocumentChangeContent from "./document-handlers/onDidDocumentChangeContent";
-import onDidDocumentClose from "./document-handlers/onDidDocumentClose";
+import onDidDocumentChangeContent from "./handlers/document/onDidDocumentChangeContent";
+import onDidDocumentClose from "./handlers/document/onDidDocumentClose";
 
-import onInitialize from "./initialization-handlers/onInitialize";
-import onShutdown from "./initialization-handlers/onShutdown";
+import onInitialize from "./handlers/initialization/onInitialize";
+import onShutdown from "./handlers/initialization/onShutdown";
 
-import onLogCompiledComponent from "./log-handlers/onLogCompiledComponent";
-import onLogContentTypeAtCursor from "./log-handlers/onLogContentTypeAtCursor";
-import onLogDeclaration from "./log-handlers/onLogDeclaration";
-import onLogProgramFiles from "./log-handlers/onLogProgramFiles";
-import onLogScriptContent from "./log-handlers/onLogScriptContent";
-import onLogTypeAtCursor from "./log-handlers/onLogTypeAtCursor";
+import onLogCompiledComponent from "./handlers/log/onLogCompiledComponent";
+import onLogContentTypeAtCursor from "./handlers/log/onLogContentTypeAtCursor";
+import onLogDeclaration from "./handlers/log/onLogDeclaration";
+import onLogProgramFiles from "./handlers/log/onLogProgramFiles";
+import onLogScriptContent from "./handlers/log/onLogScriptContent";
+import onLogTypeAtCursor from "./handlers/log/onLogTypeAtCursor";
 
-import onCompletion from "./lsp-handlers/onCompletion";
-import onCompletionResolve from "./lsp-handlers/onCompletionResolve";
-import onDefinition from "./lsp-handlers/onDefinition";
-import onHover from "./lsp-handlers/onHover";
+import onCompletion from "./handlers/lsp/onCompletion";
+import onCompletionResolve from "./handlers/lsp/onCompletionResolve";
+import onDefinition from "./handlers/lsp/onDefinition";
+import onHover from "./handlers/lsp/onHover";
 
 import RiotDeclarationDocumentsHandler from "./riot-documents/RiotDeclarationDocumentsHandler";
 
