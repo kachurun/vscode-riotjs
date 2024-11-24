@@ -1,8 +1,7 @@
 import ts from "typescript";
 
-import { MarkupKind, Position } from "vscode-languageserver";
+import { MarkupKind } from "vscode-languageserver";
 
-import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
@@ -31,15 +30,13 @@ export default function getHoverInfo(
         connection.console.log("No Language Service");
         return null;
     }
-    touchRiotDocument(filePath, getText);
-    const parsedDocument = parsedRiotDocuments.get(filePath);
-
-    if (parsedDocument == null) {
+    const riotDocument = touchRiotDocument(filePath, getText);
+    if (riotDocument == null) {
         connection.console.error("No script content found");
         return null;
     }
 
-    const { result: parserResult } = parsedDocument;
+    const parserResult = riotDocument.getParserResult();
     if (
         parserResult.output.javascript == null ||
         parserResult.output.javascript.text == null

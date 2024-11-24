@@ -1,6 +1,5 @@
 import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
-import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
@@ -29,16 +28,15 @@ export default async function onLogTypeAtCursor({
     }
 
     const filePath = getDocumentFilePath(document);
-    touchRiotDocument(filePath, () => document.getText());
-    const parsedDocument = parsedRiotDocuments.get(filePath);
-
-    if (parsedDocument == null) {
+    const riotDocument = touchRiotDocument(
+        filePath, () => document.getText()
+    );
+    if (riotDocument == null) {
         connection.console.error("Couldn't parse riot component");
         return;
     }
 
-    const { result: parserResult } = parsedDocument;
-
+    const parserResult = riotDocument.getParserResult();
     if (parserResult.output.javascript == null) {
         connection.console.error("<script> tag not found");
         return;

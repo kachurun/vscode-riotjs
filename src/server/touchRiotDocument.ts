@@ -1,15 +1,13 @@
-import { TextDocument } from "vscode-languageserver-textdocument";
-
-import getDocumentFilePath from "./getDocumentFilePath";
-import parsedRiotDocuments from "./parsedRiotDocuments";
+import riotDocuments from "./riotDocuments";
 import updateRiotDocument from "./updateRiotDocument";
 
 export default function touchRiotDocument(
     filePath: string,
     getText: () => string
 ) {
-    if (parsedRiotDocuments.has(filePath)) {
-        return filePath;
+    const riotDocument = riotDocuments.get(filePath);
+    if (riotDocument != null) {
+        return riotDocument;
     }
 
     return updateRiotDocument(filePath, getText());

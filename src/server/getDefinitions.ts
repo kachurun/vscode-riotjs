@@ -1,6 +1,5 @@
 import { Range } from 'vscode-languageserver/node';
 
-import parsedRiotDocuments from './parsedRiotDocuments';
 import touchRiotDocument from './touchRiotDocument';
 
 import { getState } from './state';
@@ -37,18 +36,14 @@ export default function getDefinitions(
         connection.console.error("No Language Service");
         return [];
     }
-    touchRiotDocument(filePath, getText);
-    const parsedDocument = parsedRiotDocuments.get(filePath);
-
-    if (parsedDocument == null) {
+    const riotDocument = touchRiotDocument(filePath, getText);
+    if (riotDocument == null) {
         connection.console.error("No script content found");
         return [];
     }
     
-    const {
-        result: parserResult,
-        scriptPosition
-    } = parsedDocument;
+    const parserResult = riotDocument.getParserResult();
+    const scriptPosition = riotDocument.getScriptPosition();
     if (
         scriptPosition == null ||
         parserResult.output.javascript == null ||

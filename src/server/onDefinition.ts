@@ -9,7 +9,6 @@ import getDefinitions from "./getDefinitions";
 import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import getUriFromPath from "./getUriFromPath";
-import parsedRiotDocuments from "./parsedRiotDocuments";
 import touchRiotDocument from "./touchRiotDocument";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
@@ -29,16 +28,15 @@ export default async function onDefinition(
     }
 
     const filePath = getDocumentFilePath(document);
-    touchRiotDocument(filePath, () => document.getText());
-    const parsedDocument = parsedRiotDocuments.get(filePath);
-    if (parsedDocument == null) {
+    const riotDocument = touchRiotDocument(filePath, () => document.getText());
+    if (riotDocument == null) {
         return null;
     }
 
     const offset = document.offsetAt(position);
 
     const contentType = getContentTypeAtOffset(
-        offset, parsedDocument.result
+        offset, riotDocument.getParserResult()
     )
     if (contentType !== "javascript") {
         return null;

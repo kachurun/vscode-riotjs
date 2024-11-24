@@ -1,9 +1,4 @@
-import { TextDocument } from "vscode-languageserver-textdocument";
-
-import compiledComponents from "./compiledComponents";
-import componentDeclarations from "./componentDeclarations";
-import getDocumentFilePath from "./getDocumentFilePath";
-import parsedRiotDocuments from "./parsedRiotDocuments";
+import riotDocuments from "./riotDocuments";
 
 import { getState } from "./state";
 
@@ -15,9 +10,7 @@ export default function removeDocument(
     } = getState();
 
     tsLanguageService.removeDocument(filePath);
-    parsedRiotDocuments.delete(filePath);
-    componentDeclarations.delete(filePath);
-    compiledComponents.delete(filePath);
+    riotDocuments.delete(filePath);
 
     return filePath;
 }

@@ -1,11 +1,7 @@
-import parseContent from "./utils/riot-parser/parseContent";
-
-import compiledComponents from "./compiledComponents";
-import componentDeclarations from "./componentDeclarations";
-import parsedRiotDocuments from "./parsedRiotDocuments";
+import RiotDocument from "./RiotDocument";
+import riotDocuments from "./riotDocuments";
 
 import { getState } from "./state";
-import { Position } from "vscode-languageserver-textdocument";
 
 export default function updateRiotDocument(
     filePath: string,
@@ -16,50 +12,21 @@ export default function updateRiotDocument(
     } = getState();
 
     try {
-        const parsedContent = parseContent(content);
-
-        let scriptPosition: Position | null;
-        if (
-            parsedContent.output.javascript != null &&
-            parsedContent.output.javascript.text != null
-        ) {
-            const contentBeforeScript = content.substring(
-                0, parsedContent.output.javascript.text.start
+        if (riotDocuments.has(filePath)) {
+            const riotDocument = riotDocuments.get(filePath)!;
+            return riotDocument.update(
+                content, tsLanguageService, riotDocuments
             );
-            const lines = contentBeforeScript.split("\n");
-            scriptPosition = {
-                line: lines.length - 1,
-                character: lines.at(-1)!.length - 1
-            };
-
-            tsLanguageService.updateDocument(
-                filePath,
-                parsedContent.output.javascript.text.text
-            );
-        } else {
-            scriptPosition = null;
-
-            tsLanguageService.removeDocument(filePath)
         }
-
-        parsedRiotDocuments.set(filePath, {
-            result: parsedContent,
-            scriptPosition
-        });
+        const riotDocument = new RiotDocument(
+            filePath, content,
+            tsLanguageService, riotDocuments
+        )
+        riotDocuments.set(filePath, riotDocument);
+        return riotDocument;
     } catch (error) {
-        // here will be some diagnostics
-        tsLanguageService.removeDocument(filePath);
-        parsedRiotDocuments.delete(filePath);
+        // here there will be some diagnostics
+        riotDocuments.delete(filePath);
+        return null;
     }
-
-    [
-        ...tsLanguageService.getRootFilesDependantOf(filePath),
-        ...tsLanguageService.getRootFilesDependantOf(`${filePath}.d.ts`)
-    ].forEach(rootFilePath => {
-        componentDeclarations.delete(rootFilePath);
-    });
-
-    componentDeclarations.delete(filePath);
-    compiledComponents.delete(filePath);
-    return filePath;
 }

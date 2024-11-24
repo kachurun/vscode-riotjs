@@ -1,8 +1,9 @@
 import { existsSync, readFileSync } from "fs";
 import { URI } from "vscode-uri";
 
-import { getState } from "./state";
 import getComponentDeclaration from "./getComponentDeclaration";
+
+import { getState } from "./state";
 
 export default function onRequestDocument(filePath: string) {
     const {

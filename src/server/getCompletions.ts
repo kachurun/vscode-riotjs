@@ -1,13 +1,8 @@
-import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-    Position,
-    createConnection
-} from "vscode-languageserver/node";
+import { createConnection } from "vscode-languageserver/node";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
 import touchRiotDocument from "./touchRiotDocument";
-import parsedRiotDocuments from "./parsedRiotDocuments";
 
 namespace getCompletions {
     export type Args = {
@@ -32,15 +27,13 @@ export default function getCompletions(
         connection.console.log("No Language Service");
         return null;
     }
-    touchRiotDocument(filePath, getText);
-    const parsedDocument = parsedRiotDocuments.get(filePath);
-
-    if (parsedDocument == null) {
+    const riotDocument = touchRiotDocument(filePath, getText);
+    if (riotDocument == null) {
         connection.console.error("No script content found");
         return null;
     }
 
-    const { result: parserResult } = parsedDocument;
+    const parserResult = riotDocument.getParserResult();
     if (
         parserResult.output.javascript == null ||
         parserResult.output.javascript.text == null
