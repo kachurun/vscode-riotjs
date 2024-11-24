@@ -5,7 +5,7 @@ import getDocumentFilePath from "./getDocumentFilePath";
 
 import { getState } from "./state";
 
-import removeRiotDocument from "./riotDocuments/remove";
+import removeRiotDocument from "./riot-documents/remove";
 
 export default function onDidDocumentClose(
     event: TextDocumentChangeEvent<TextDocument>

@@ -2,7 +2,7 @@ import { Range } from 'vscode-languageserver/node';
 
 import { getState } from './state';
 
-import touchRiotDocument from './riotDocuments/touch';
+import touchRiotDocument from './riot-documents/touch';
 
 namespace getDefinitions {
     export type DefinitionResult = {

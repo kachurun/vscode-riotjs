@@ -3,7 +3,7 @@ import getDocumentFilePath from "./getDocumentFilePath";
 
 import { getState } from "./state";
 
-import touchRiotDocument from "./riotDocuments/touch";
+import touchRiotDocument from "./riot-documents/touch";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 

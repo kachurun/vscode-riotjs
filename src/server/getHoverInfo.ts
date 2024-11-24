@@ -4,7 +4,7 @@ import { MarkupKind } from "vscode-languageserver";
 
 import { getState } from "./state";
 
-import touchRiotDocument from "./riotDocuments/touch";
+import touchRiotDocument from "./riot-documents/touch";
 
 namespace getHoverInfo {
     export type Args = {

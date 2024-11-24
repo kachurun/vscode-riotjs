@@ -5,7 +5,7 @@ import {
 
 import getDocumentFilePath from "./getDocumentFilePath";
 
-import updateRiotDocument from "./riotDocuments/update";
+import updateRiotDocument from "./riot-documents/update";
 
 export default function onDidDocumentChangeContent(
     event: TextDocumentChangeEvent<TextDocument>

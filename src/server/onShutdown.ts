@@ -1,8 +1,8 @@
-import riotDocuments from "./riotDocuments";
+import riotDocuments from "./riot-documents";
 
 import { getState } from "./state";
 
-import removeRiotDocument from "./riotDocuments/remove";
+import removeRiotDocument from "./riot-documents/remove";
 
 export default function onShutdown() {
     for (let key in riotDocuments.keys()) {

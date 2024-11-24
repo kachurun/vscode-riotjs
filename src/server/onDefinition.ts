@@ -10,7 +10,7 @@ import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import getUriFromPath from "./getUriFromPath";
 
-import touchRiotDocument from "./riotDocuments/touch";
+import touchRiotDocument from "./riot-documents/touch";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 
