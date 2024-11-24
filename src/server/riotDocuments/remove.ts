@@ -1,8 +1,8 @@
-import riotDocuments from "./riotDocuments";
+import riotDocuments from ".";
 
-import { getState } from "./state";
+import { getState } from "../state";
 
-export default function removeDocument(
+export default function removeRiotDocument(
     filePath: string
 ) {
     const {

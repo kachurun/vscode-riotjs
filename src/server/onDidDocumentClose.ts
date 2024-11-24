@@ -2,9 +2,10 @@ import { TextDocumentChangeEvent } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import getDocumentFilePath from "./getDocumentFilePath";
-import removeDocument from "./removeDocument";
 
 import { getState } from "./state";
+
+import removeRiotDocument from "./riotDocuments/remove";
 
 export default function onDidDocumentClose(
     event: TextDocumentChangeEvent<TextDocument>
@@ -12,5 +13,5 @@ export default function onDidDocumentClose(
     getState().connection.console.log(
         `Document closed: "${event.document.uri}"`
     );
-    removeDocument(getDocumentFilePath(event.document));
+    removeRiotDocument(getDocumentFilePath(event.document));
 }

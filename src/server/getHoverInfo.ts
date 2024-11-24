@@ -2,9 +2,9 @@ import ts from "typescript";
 
 import { MarkupKind } from "vscode-languageserver";
 
-import touchRiotDocument from "./touchRiotDocument";
-
 import { getState } from "./state";
+
+import touchRiotDocument from "./riotDocuments/touch";
 
 namespace getHoverInfo {
     export type Args = {

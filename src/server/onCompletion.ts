@@ -9,9 +9,10 @@ import CompletionConverter from "../CompletionConverter";
 import getCompletions from "./getCompletions";
 import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
-import touchRiotDocument from "./touchRiotDocument";
 
 import { getState } from "./state";
+
+import touchRiotDocument from "./riotDocuments/touch";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 

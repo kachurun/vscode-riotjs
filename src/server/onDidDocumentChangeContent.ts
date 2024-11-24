@@ -3,8 +3,9 @@ import {
     TextDocumentChangeEvent
 } from "vscode-languageserver/node";
 
-import updateRiotDocument from "./updateRiotDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
+
+import updateRiotDocument from "./riotDocuments/update";
 
 export default function onDidDocumentChangeContent(
     event: TextDocumentChangeEvent<TextDocument>

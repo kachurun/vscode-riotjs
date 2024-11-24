@@ -1,6 +1,6 @@
-import touchRiotDocument from "./touchRiotDocument";
-
 import { getState } from "./state";
+
+import touchRiotDocument from "./riotDocuments/touch";
 
 export default function getComponentDeclaration(
     filePath: string,

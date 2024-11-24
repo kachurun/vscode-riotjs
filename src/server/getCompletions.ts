@@ -2,7 +2,7 @@ import { createConnection } from "vscode-languageserver/node";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
-import touchRiotDocument from "./touchRiotDocument";
+import touchRiotDocument from "./riotDocuments/touch";
 
 namespace getCompletions {
     export type Args = {

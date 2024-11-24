@@ -1,8 +1,6 @@
-import { compile } from "@riotjs/compiler";
-
-import touchRiotDocument from "./touchRiotDocument";
-
 import { getState } from "./state";
+
+import touchRiotDocument from "./riotDocuments/touch";
 
 export default function getCompiledComponent(
     filePath: string,

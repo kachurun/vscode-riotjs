@@ -1,7 +1,7 @@
 import RiotDocument from "./RiotDocument";
-import riotDocuments from "./riotDocuments";
+import riotDocuments from ".";
 
-import { getState } from "./state";
+import { getState } from "../state";
 
 export default function updateRiotDocument(
     filePath: string,

@@ -9,7 +9,8 @@ import getDefinitions from "./getDefinitions";
 import getDocument from "./getDocument";
 import getDocumentFilePath from "./getDocumentFilePath";
 import getUriFromPath from "./getUriFromPath";
-import touchRiotDocument from "./touchRiotDocument";
+
+import touchRiotDocument from "./riotDocuments/touch";
 
 import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
 
