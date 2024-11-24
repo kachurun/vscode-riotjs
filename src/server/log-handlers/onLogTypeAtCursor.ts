@@ -1,11 +1,11 @@
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
+import getDocument from "../core/getDocument";
 
-import { getState } from "./state";
+import { getState } from "../core/state";
 
-import touchRiotDocument from "./riot-documents/touch";
+import touchRiotDocument from "../riot-documents/touch";
 
-import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+import getContentTypeAtOffset from "../utils/getContentTypeAtOffset";
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 namespace onLogTypeAtCursor {
     export type Args = {

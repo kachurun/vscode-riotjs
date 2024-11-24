@@ -1,4 +1,4 @@
-import riotDocuments from ".";
+import riotDocuments from "./riotDocuments";
 import updateRiotDocument from "./update";
 
 export default function touchRiotDocument(

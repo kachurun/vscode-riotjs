@@ -4,17 +4,18 @@ import {
     CompletionParams
 } from "vscode-languageserver/node";
 
-import CompletionConverter from "../CompletionConverter";
+import CompletionConverter from "../../CompletionConverter";
 
-import getCompletions from "./getCompletions";
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
+import getCompletions from "../lsp-features/getCompletions";
 
-import { getState } from "./state";
+import getDocument from "../core/getDocument";
 
-import touchRiotDocument from "./riot-documents/touch";
+import { getState } from "../core/state";
 
-import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+import touchRiotDocument from "../riot-documents/touch";
+
+import getDocumentFilePath from "../utils/getDocumentFilePath";
+import getContentTypeAtOffset from "../utils/getContentTypeAtOffset";
 
 export default async function onCompletion(
     params: CompletionParams

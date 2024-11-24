@@ -9,24 +9,30 @@ import { getCSSLanguageService } from "vscode-css-languageservice";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
-import onCompletion from "./onCompletion";
-import onCompletionResolve from "./onCompletionResolve";
-import onDefinition from "./onDefinition";
-import onDidDocumentChangeContent from "./onDidDocumentChangeContent";
-import onDidDocumentClose from "./onDidDocumentClose";
-import onGetContentTypeAtCursor from "./onGetContentTypeAtCursor";
-import onHover from "./onHover";
-import onInitialize from "./onInitialize";
-import onLogCompiledComponent from "./onLogCompiledComponent";
-import onLogContentTypeAtCursor from "./onLogContentTypeAtCursor";
-import onLogDeclaration from "./onLogDeclaration";
-import onLogProgramFiles from "./onLogProgramFiles";
-import onLogScriptContent from "./onLogScriptContent";
-import onLogTypeAtCursor from "./onLogTypeAtCursor";
-import onShutdown from "./onShutdown";
-import RiotDeclarationDocumentsHandler from "./RiotDeclarationDocumentsHandler";
+import { setState } from "./core/state";
 
-import { setState } from "./state";
+import onGetContentTypeAtCursor from "./custom-handlers/onGetContentTypeAtCursor";
+
+import onDidDocumentChangeContent from "./document-handlers/onDidDocumentChangeContent";
+import onDidDocumentClose from "./document-handlers/onDidDocumentClose";
+
+import onInitialize from "./initialization-handlers/onInitialize";
+import onShutdown from "./initialization-handlers/onShutdown";
+
+import onLogCompiledComponent from "./log-handlers/onLogCompiledComponent";
+import onLogContentTypeAtCursor from "./log-handlers/onLogContentTypeAtCursor";
+import onLogDeclaration from "./log-handlers/onLogDeclaration";
+import onLogProgramFiles from "./log-handlers/onLogProgramFiles";
+import onLogScriptContent from "./log-handlers/onLogScriptContent";
+import onLogTypeAtCursor from "./log-handlers/onLogTypeAtCursor";
+
+import onCompletion from "./lsp-handlers/onCompletion";
+import onCompletionResolve from "./lsp-handlers/onCompletionResolve";
+import onDefinition from "./lsp-handlers/onDefinition";
+import onHover from "./lsp-handlers/onHover";
+
+import RiotDeclarationDocumentsHandler from "./riot-documents/RiotDeclarationDocumentsHandler";
+
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);

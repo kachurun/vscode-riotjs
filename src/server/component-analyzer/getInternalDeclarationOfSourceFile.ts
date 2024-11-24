@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 
-import { getState } from './state';
+import { getState } from '../core/state';
 
 export default function getInternalDeclarationOfSourceFile(
     sourceFile: ts.SourceFile,

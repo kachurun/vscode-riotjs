@@ -1,6 +1,6 @@
-import riotDocuments from ".";
+import { getState } from "../core/state";
 
-import { getState } from "../state";
+import riotDocuments from "./riotDocuments";
 
 export default function removeRiotDocument(
     filePath: string

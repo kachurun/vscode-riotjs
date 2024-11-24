@@ -3,13 +3,14 @@ import {
     HoverParams
 } from "vscode-languageserver/node";
 
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
-import getHoverInfo from "./getHoverInfo";
+import getDocument from "../core/getDocument";
 
-import touchRiotDocument from "./riot-documents/touch";
+import getHoverInfo from "../lsp-features/getHoverInfo";
 
-import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+import touchRiotDocument from "../riot-documents/touch";
+
+import getContentTypeAtOffset from "../utils/getContentTypeAtOffset";
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 export default function onHover(
     {

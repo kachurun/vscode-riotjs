@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from "fs";
 import { URI } from "vscode-uri";
 
-import TypeScriptLanguageService from "../TypeScriptLanguageService";
+import TypeScriptLanguageService from "../../TypeScriptLanguageService";
 
-import getComponentDeclaration from "./getComponentDeclaration";
-import getDocument from "./getDocument";
+import getComponentDeclaration from "../component-analyzer/getComponentDeclaration";
+import getDocument from "../core/getDocument";
 
 const RiotDeclarationDocumentsHandler: (
     TypeScriptLanguageService.DocumentsHandler

@@ -1,9 +1,10 @@
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
+import touchRiotDocument from "../riot-documents/touch";
 
-import { getState } from "./state";
+import getDocument from "../core/getDocument";
 
-import touchRiotDocument from "./riot-documents/touch";
+import { getState } from "../core/state";
+
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 namespace onLogScriptContent {
     export type Args = {

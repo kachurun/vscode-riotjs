@@ -1,5 +1,6 @@
-import ParserResult from "./riot-parser/ParserResult";
 import isOffsetInNode from "./isOffsetInNode";
+
+import ParserResult from "./riot-parser/ParserResult";
 
 export default function isInsideScript(
     offset: number,

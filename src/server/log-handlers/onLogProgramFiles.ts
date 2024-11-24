@@ -1,6 +1,6 @@
 import type { SourceFile } from "typescript";
 
-import { getState } from "./state";
+import { getState } from "../core/state";
 
 export default async function onLogProgramFiles() {
     const {

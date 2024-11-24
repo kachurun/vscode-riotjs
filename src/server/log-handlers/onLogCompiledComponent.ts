@@ -1,8 +1,10 @@
-import getCompiledComponent from "./getCompiledComponent";
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
+import getCompiledComponent from "../component-analyzer/getCompiledComponent";
 
-import { getState } from "./state";
+import getDocument from "../core/getDocument";
+
+import { getState } from "../core/state";
+
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 namespace onLogCompiledComponent {
     export type Args = {

@@ -1,4 +1,5 @@
 import isOffsetInNode from "./isOffsetInNode";
+
 import Expression from "./riot-parser/Expression";
 
 export default function findExpressionAtOffset(

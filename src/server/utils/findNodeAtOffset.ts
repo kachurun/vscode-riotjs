@@ -1,4 +1,5 @@
 import isOffsetInNode from "./isOffsetInNode";
+
 import ParserNode from "./riot-parser/ParserNode";
 
 export default function findNodeAtOffset(

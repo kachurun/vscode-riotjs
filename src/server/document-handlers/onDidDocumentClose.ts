@@ -1,11 +1,11 @@
 import { TextDocumentChangeEvent } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import getDocumentFilePath from "./getDocumentFilePath";
+import { getState } from "../core/state";
 
-import { getState } from "./state";
+import removeRiotDocument from "../riot-documents/remove";
 
-import removeRiotDocument from "./riot-documents/remove";
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 export default function onDidDocumentClose(
     event: TextDocumentChangeEvent<TextDocument>

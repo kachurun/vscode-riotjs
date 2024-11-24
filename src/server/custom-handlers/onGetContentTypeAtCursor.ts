@@ -1,11 +1,11 @@
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
+import getDocument from "../core/getDocument";
 
-import { getState } from "./state";
+import { getState } from "../core/state";
 
-import touchRiotDocument from "./riot-documents/touch";
+import touchRiotDocument from "../riot-documents/touch";
 
-import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+import getContentTypeAtOffset from "../utils/getContentTypeAtOffset";
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 namespace onGetContentTypeAtCursor {
     export type Args = {
@@ -22,7 +22,7 @@ export default async function onGetContentTypeAtCursor({
     } = getState();
 
     const document = getDocument(uri);
-    if (!document) {
+    if (document == null) {
         connection.console.error(`Document "${uri}" not found`);
         return null;
     }

@@ -1,8 +1,10 @@
-import getComponentDeclaration from "./getComponentDeclaration";
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
+import getComponentDeclaration from "../component-analyzer/getComponentDeclaration";
 
-import { getState } from "./state";
+import getDocument from "../core/getDocument";
+
+import { getState } from "../core/state";
+
+import getDocumentFilePath from "../utils/getDocumentFilePath";
 
 namespace onLogDeclaration {
     export type Args = {

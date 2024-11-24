@@ -7,7 +7,7 @@ import {
     LanguageService as CSSLanguageService
 } from "vscode-css-languageservice";
 
-import TypeScriptLanguageService from "../TypeScriptLanguageService";
+import TypeScriptLanguageService from "../../TypeScriptLanguageService";
 
 type State = {
     connection: ReturnType<typeof createConnection>,

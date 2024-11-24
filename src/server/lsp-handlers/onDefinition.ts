@@ -5,14 +5,15 @@ import {
     Location
 } from "vscode-languageserver/node";
 
-import getDefinitions from "./getDefinitions";
-import getDocument from "./getDocument";
-import getDocumentFilePath from "./getDocumentFilePath";
-import getUriFromPath from "./getUriFromPath";
+import getDefinitions from "../lsp-features/getDefinitions";
 
-import touchRiotDocument from "./riot-documents/touch";
+import getDocument from "../core/getDocument";
 
-import getContentTypeAtOffset from "./utils/getContentTypeAtOffset";
+import touchRiotDocument from "../riot-documents/touch";
+
+import getContentTypeAtOffset from "../utils/getContentTypeAtOffset";
+import getDocumentFilePath from "../utils/getDocumentFilePath";
+import getUriFromPath from "../utils/getUriFromPath";
 
 export default async function onDefinition(
     {

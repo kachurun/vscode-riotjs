@@ -4,7 +4,7 @@ import {
     TextDocumentSyncKind
 } from "vscode-languageserver/node";
 
-import { getState } from "./state";
+import { getState } from "../core/state";
 
 export default function onInitialize(
     params: InitializeParams
