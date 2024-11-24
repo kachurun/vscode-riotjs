@@ -1,13 +1,16 @@
+import removeRiotDocument from "../../core/riot-documents/remove";
+
 import { getState } from "../../core/state";
 
-import riotDocuments from "../../riot-documents";
-
-import removeRiotDocument from "../../riot-documents/remove";
-
 export default function onShutdown() {
+    const {
+        riotDocuments,
+        tsLanguageService
+    } = getState();
+
     for (let key in riotDocuments.keys()) {
         removeRiotDocument(key);
     }
 
-    getState().tsLanguageService.dispose();
+    tsLanguageService.dispose();
 }

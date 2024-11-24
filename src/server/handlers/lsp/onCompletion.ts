@@ -8,13 +8,13 @@ import CompletionConverter from "../../../CompletionConverter";
 
 import getDocument from "../../core/getDocument";
 
+import touchRiotDocument from "../../core/riot-documents/touch";
+
 import { getState } from "../../core/state";
 
 import getCompletions from "../../features/lsp/getCompletions";
 
 import getContentTypeAtOffset from "../../features/riot/getContentTypeAtOffset";
-
-import touchRiotDocument from "../../riot-documents/touch";
 
 import uriToPath from "../../utils/document/uriToPath";
 

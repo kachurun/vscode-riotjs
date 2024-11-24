@@ -1,11 +1,10 @@
-import { getState } from "../core/state";
-
-import riotDocuments from "./riotDocuments";
+import { getState } from "../state";
 
 export default function removeRiotDocument(
     filePath: string
 ) {
     const {
+        riotDocuments,
         tsLanguageService
     } = getState();
 

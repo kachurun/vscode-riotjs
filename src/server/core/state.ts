@@ -9,10 +9,13 @@ import {
 
 import TypeScriptLanguageService from "../../TypeScriptLanguageService";
 
+import RiotDocument from "./riot-documents/RiotDocument";
+
 type State = {
     connection: ReturnType<typeof createConnection>,
 
     documents: TextDocuments<TextDocument>,
+    riotDocuments: Map<string, RiotDocument>,
 
     tsLanguageService: TypeScriptLanguageService,
     htmlLanguageService: HTMLLanguageService,

@@ -1,14 +1,14 @@
 import { compile, CompilerOutput } from "@riotjs/compiler";
 import { Position } from "vscode-languageserver-textdocument"
 
-import TypeScriptLanguageService from "../../TypeScriptLanguageService";
+import TypeScriptLanguageService from "../../../TypeScriptLanguageService";
 
-import getInternalDeclarationOfSourceFile from "../features/ts/getInternalDeclarationOfSourceFile";
+import getInternalDeclarationOfSourceFile from "../../features/ts/getInternalDeclarationOfSourceFile";
 
-import convertInternalDeclarationToExternal from "../utils/convertInternalDeclarationToExternal";
+import convertInternalDeclarationToExternal from "../../utils/convertInternalDeclarationToExternal";
 
-import ParserResult from "../utils/riot-parser/ParserResult"
-import parseContent from "../utils/riot-parser/parseContent";
+import ParserResult from "../../utils/riot-parser/ParserResult"
+import parseContent from "../../utils/riot-parser/parseContent";
 
 import defaultRiotComponentDeclaration from "./defaultRiotComponentDeclaration";
 

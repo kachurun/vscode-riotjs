@@ -1,11 +1,12 @@
-import riotDocuments from "./riotDocuments";
+import { getState } from "../state";
+
 import updateRiotDocument from "./update";
 
 export default function touchRiotDocument(
     filePath: string,
     getText: () => string
 ) {
-    const riotDocument = riotDocuments.get(filePath);
+    const riotDocument = getState().riotDocuments.get(filePath);
     if (riotDocument != null) {
         return riotDocument;
     }

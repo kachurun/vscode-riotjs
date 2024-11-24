@@ -3,7 +3,7 @@ import {
     TextDocumentChangeEvent
 } from "vscode-languageserver/node";
 
-import updateRiotDocument from "../../riot-documents/update";
+import updateRiotDocument from "../../core/riot-documents/update";
 
 import uriToPath from "../../utils/document/uriToPath";
 

@@ -1,13 +1,13 @@
-import { getState } from "../core/state";
+import { getState } from "../state";
 
 import RiotDocument from "./RiotDocument";
-import riotDocuments from "./riotDocuments";
 
 export default function updateRiotDocument(
     filePath: string,
     content: string
 ) {
     const {
+        riotDocuments,
         tsLanguageService
     } = getState();
 

@@ -1,6 +1,6 @@
-import { getState } from "../../core/state";
+import touchRiotDocument from "../../core/riot-documents/touch";
 
-import touchRiotDocument from "../../riot-documents/touch";
+import { getState } from "../../core/state";
 
 export default function getComponentDeclaration(
     filePath: string,

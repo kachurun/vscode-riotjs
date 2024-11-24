@@ -31,7 +31,7 @@ import onCompletionResolve from "./handlers/lsp/onCompletionResolve";
 import onDefinition from "./handlers/lsp/onDefinition";
 import onHover from "./handlers/lsp/onHover";
 
-import RiotDeclarationDocumentsHandler from "./riot-documents/RiotDeclarationDocumentsHandler";
+import RiotDeclarationDocumentsHandler from "./core/riot-documents/RiotDeclarationDocumentsHandler";
 
 
 const connection = createConnection(ProposedFeatures.all);
@@ -40,6 +40,7 @@ const documents = new TextDocuments(TextDocument);
 setState({
     connection,
     documents,
+    riotDocuments: new Map(),
 
     tsLanguageService: new TypeScriptLanguageService({
         documentsHandlers: [

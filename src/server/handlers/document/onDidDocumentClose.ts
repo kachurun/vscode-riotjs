@@ -1,9 +1,9 @@
 import { TextDocumentChangeEvent } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
-import { getState } from "../../core/state";
+import removeRiotDocument from "../../core/riot-documents/remove";
 
-import removeRiotDocument from "../../riot-documents/remove";
+import { getState } from "../../core/state";
 
 import uriToPath from "../../utils/document/uriToPath";
 

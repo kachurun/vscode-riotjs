@@ -1,8 +1,8 @@
 import getDocument from "../../core/getDocument";
 
-import { getState } from "../../core/state";
+import touchRiotDocument from "../../core/riot-documents/touch";
 
-import touchRiotDocument from "../../riot-documents/touch";
+import { getState } from "../../core/state";
 
 import uriToPath from "../../utils/document/uriToPath";
 

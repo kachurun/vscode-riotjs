@@ -5,11 +5,11 @@ import {
 
 import getDocument from "../../core/getDocument";
 
+import touchRiotDocument from "../../core/riot-documents/touch";
+
 import getHoverInfo from "../../features/lsp/getHoverInfo";
 
 import getContentTypeAtOffset from "../../features/riot/getContentTypeAtOffset";
-
-import touchRiotDocument from "../../riot-documents/touch";
 
 import uriToPath from "../../utils/document/uriToPath";
 
