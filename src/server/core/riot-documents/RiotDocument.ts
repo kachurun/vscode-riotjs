@@ -171,11 +171,23 @@ export default class RiotDocument {
                 this.componentsProperty = propType;
             }
 
+            const declaration = (
+                prop.valueDeclaration ||
+                prop.declarations?.[0] ||
+                null
+            );
+
             if (
-                ts.isMethodDeclaration(prop.valueDeclaration!) ||
-                ts.isMethodSignature(prop.valueDeclaration!)
+                declaration != null &&
+                (
+                    ts.isMethodDeclaration(declaration) ||
+                    ts.isMethodSignature(declaration)
+                )
             ) {
-                const signature = propType.getCallSignatures()[0];
+                const signature = (
+                    propType.getCallSignatures()[0] ||
+                    typeChecker.getSignatureFromDeclaration(declaration)
+                );
                 if (signature) {
                     const params = getParamsTypeStringOfSignature(signature, sourceFile, typeChecker, seenTypes);
     
