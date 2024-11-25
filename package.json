@@ -59,6 +59,12 @@
         "enablement": "editorLangId == riotjs"
       },
       {
+        "command": "riotjs.logExpressionScopeFunction",
+        "title": "Log Expression Scope Function",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
         "command": "riotjs.logExternalDeclaration",
         "title": "Log External Declaration",
         "category": "RiotJS",
@@ -79,6 +85,12 @@
       {
         "command": "riotjs.logScriptContent",
         "title": "Log Script Content",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logSlots",
+        "title": "Log Slots",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       },

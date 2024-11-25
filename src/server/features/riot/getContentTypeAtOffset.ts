@@ -1,6 +1,4 @@
-import findAttributeAtOffset from "../../utils/node/findAttributeAtOffset";
 import findExpressionAtOffset from "../../utils/node/findExpressionAtOffset";
-import findNodeAtOffset from "../../utils/node/findNodeAtOffset";
 import isOffsetInNode from "../../utils/node/isOffsetInNode";
 
 import ParserResult from "../../utils/riot-parser/ParserResult";
@@ -27,16 +25,7 @@ export default function getContentTypeAtOffset(
         return "javascript";
     }
 
-    const node = findNodeAtOffset(offset, template);
-
-    const attributeAtOffset = findAttributeAtOffset(offset, node);
-    if (attributeAtOffset != null) {
-        return findExpressionAtOffset(
-            offset, attributeAtOffset.expressions || []
-        ) != null ? "expression" : "template";
-    }
-
-    return findExpressionAtOffset(
-        offset, node.expressions || []
-    ) != null ? "expression" : "template";
+    return (findExpressionAtOffset(offset, template) ?
+        "expression" : "template"
+    );
 }

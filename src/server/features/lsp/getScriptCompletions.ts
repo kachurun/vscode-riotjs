@@ -4,7 +4,7 @@ import TypeScriptLanguageService from "../../../TypeScriptLanguageService";
 
 import touchRiotDocument from "../../core/riot-documents/touch";
 
-namespace getCompletions {
+namespace getScriptCompletions {
     export type Args = {
         filePath: string,
         getText: () => string,
@@ -14,14 +14,14 @@ namespace getCompletions {
     };
 }
 
-export default function getCompletions(
+function getScriptCompletions(
     {
         filePath,
         getText,
         offset,
         tsLanguageService,
         connection
-    }: getCompletions.Args
+    }: getScriptCompletions.Args
 ) {
     if (tsLanguageService == null) {
         connection.console.log("No Language Service");
@@ -56,3 +56,5 @@ export default function getCompletions(
         return null;
     }
 }
+
+export default getScriptCompletions;

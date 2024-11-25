@@ -1,14 +1,22 @@
+import ts from "typescript";
+
 import { compile, CompilerOutput } from "@riotjs/compiler";
 import { Position } from "vscode-languageserver-textdocument"
 
 import TypeScriptLanguageService from "../../../TypeScriptLanguageService";
 
+import getDefaultExportedType from "../../features/ts/getDefaultExportedType";
 import getInternalDeclarationOfSourceFile from "../../features/ts/getInternalDeclarationOfSourceFile";
 
-import convertInternalDeclarationToExternal from "../../utils/convertInternalDeclarationToExternal";
+import convertInternalDeclarationToExternal from "../../utils/riot/convertInternalDeclarationToExternal";
 
 import ParserResult from "../../utils/riot-parser/ParserResult"
 import parseContent from "../../utils/riot-parser/parseContent";
+
+import expandTypeString from "../../utils/ts/expandTypeString";
+import getParamsTypeStringOfSignature from "../../utils/ts/getParamsTypeStringOfSignature";
+import getTypeWithFilteredUndefined from "../../utils/ts/getTypeWithFilteredUndefined";
+import isPropertyAccessibleViaDotSyntax from "../../utils/ts/isPropertyAccessibleViaDotSyntax";
 
 import defaultRiotComponentDeclaration from "./defaultRiotComponentDeclaration";
 
@@ -16,6 +24,9 @@ export default class RiotDocument {
     private parserResult: ParserResult;
     private scriptPosition: null | Position = null;
 
+    private componentProperties: Record<string, string> | null | undefined;
+    private componentsProperty: ts.Type | null | undefined;
+    
     private internalDeclaration: string | null = null;
     private externalDeclaration: string | null = null;
 
@@ -72,6 +83,8 @@ export default class RiotDocument {
         tsLanguageService: TypeScriptLanguageService,
         otherRiotDocuments: Map<string, RiotDocument>
     ) {
+        this.componentProperties = undefined;
+
         this.internalDeclaration = null;
         this.externalDeclaration = null;
         [
@@ -107,6 +120,83 @@ export default class RiotDocument {
         }
 
         return this.parserResult.data;
+    }
+
+    // should fallback to basic riot component properties!
+    getComponentProperties(tsLanguageService: TypeScriptLanguageService) {
+        if (this.componentProperties !== undefined) {
+            return this.componentProperties;
+        }
+
+        this.componentsProperty = null;
+
+        const sourceFile = tsLanguageService.getSourceFile(
+            this.filePath
+        );
+        if (sourceFile == null) {
+            return this.componentProperties = null;
+        }
+
+        const typeChecker = (
+            tsLanguageService.getProgram().getTypeChecker()
+        );
+
+        const defaultExportedType = getDefaultExportedType(
+            sourceFile, typeChecker
+        );
+        if (defaultExportedType == null) {
+            return this.componentProperties = null;
+        }
+
+        const componentProperties: Record<string, string> = {};
+        const seenTypes = new Map<number, string>();
+        typeChecker.getPropertiesOfType(defaultExportedType).forEach(prop => {
+            const propertyName = isPropertyAccessibleViaDotSyntax(prop.name) ? prop.name : `"${prop.name}"`;
+
+            const isOptional = (prop.flags & ts.SymbolFlags.Optional) !== 0;
+            const propType = (isOptional ?
+                getTypeWithFilteredUndefined(
+                    typeChecker.getTypeOfSymbolAtLocation(
+                        prop,
+                        prop.valueDeclaration!
+                    )
+                ) :
+                typeChecker.getTypeOfSymbolAtLocation(
+                    prop,
+                    prop.valueDeclaration!
+                )
+            );
+
+            if (prop.name === "components") {
+                this.componentsProperty = propType;
+            }
+
+            if (
+                ts.isMethodDeclaration(prop.valueDeclaration!) ||
+                ts.isMethodSignature(prop.valueDeclaration!)
+            ) {
+                const signature = propType.getCallSignatures()[0];
+                if (signature) {
+                    const params = getParamsTypeStringOfSignature(signature, sourceFile, typeChecker, seenTypes);
+    
+                    const returnType = typeChecker.getReturnTypeOfSignature(signature);
+                    componentProperties[prop.name] = (`${propertyName}${isOptional ? "?" : ""}(${params}): ${expandTypeString(returnType, typeChecker, sourceFile, seenTypes)}`);
+                    return;
+                }
+            }
+
+            componentProperties[prop.name] = `${propertyName}${isOptional ? "?" : ""}: ${expandTypeString(propType, typeChecker, sourceFile, seenTypes)}`;
+        });
+        return this.componentProperties = componentProperties;
+    }
+
+    getComponentsProperty(tsLanguageService: TypeScriptLanguageService) {
+        if (this.componentsProperty !== undefined) {
+            return this.componentsProperty;
+        }
+
+        this.getComponentProperties(tsLanguageService);
+        return this.componentsProperty!;
     }
 
     getInternalDeclaration(tsLanguageService: TypeScriptLanguageService) {

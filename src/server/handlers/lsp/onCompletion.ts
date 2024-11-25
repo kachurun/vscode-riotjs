@@ -12,7 +12,8 @@ import touchRiotDocument from "../../core/riot-documents/touch";
 
 import { getState } from "../../core/state";
 
-import getCompletions from "../../features/lsp/getCompletions";
+import getExpressionCompletions from "../../features/lsp/getExpressionCompletions";
+import getScriptCompletions from "../../features/lsp/getScriptCompletions";
 
 import getContentTypeAtOffset from "../../features/riot/getContentTypeAtOffset";
 
@@ -26,7 +27,6 @@ export default async function onCompletion(
 )> {
     const {
         connection,
-        documents,
         tsLanguageService,
         htmlLanguageService
     } = getState()
@@ -56,7 +56,7 @@ export default async function onCompletion(
 
         switch (contentType) {
             case "javascript": {
-                const completions = getCompletions({
+                const completions = getScriptCompletions({
                     filePath,
                     getText: () => document.getText(),
                     offset,
@@ -68,10 +68,16 @@ export default async function onCompletion(
                 return CompletionConverter.convert(completions);
             }
             case "expression": {
-                connection.console.log(
-                    "Requested position is inside expression"
-                );
-                return null;
+                const completions = getExpressionCompletions({
+                    filePath,
+                    getText: () => document.getText(),
+                    offset,
+                    tsLanguageService, connection
+                });
+
+                // TODO: add script offset to range of replacement
+
+                return CompletionConverter.convert(completions);
             }
             case "css": {
                 // TODO: should extract content from style tag, and remap position after completions

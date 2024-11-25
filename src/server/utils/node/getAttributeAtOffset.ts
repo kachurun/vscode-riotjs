@@ -1,8 +1,8 @@
-import isOffsetInNode from "./isOffsetInNode";
-
 import ParserNode from "../riot-parser/ParserNode";
 
-export default function findAttributeAtOffset(
+import isOffsetInNode from "./isOffsetInNode";
+
+export default function getAttributeAtOffset(
     offset: number, node: ParserNode
 ) {
     if (node.attributes == null || node.attributes.length === 0) {

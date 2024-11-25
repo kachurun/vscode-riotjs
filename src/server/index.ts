@@ -9,6 +9,8 @@ import { getCSSLanguageService } from "vscode-css-languageservice";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
+import RiotDeclarationDocumentsHandler from "./core/riot-documents/RiotDeclarationDocumentsHandler";
+
 import { setState } from "./core/state";
 
 import onGetContentTypeAtCursor from "./handlers/custom/onGetContentTypeAtCursor";
@@ -22,8 +24,10 @@ import onShutdown from "./handlers/initialization/onShutdown";
 import onLogCompiledComponent from "./handlers/log/onLogCompiledComponent";
 import onLogContentTypeAtCursor from "./handlers/log/onLogContentTypeAtCursor";
 import onLogDeclaration from "./handlers/log/onLogDeclaration";
+import onLogExpressionScopeFunction from "./handlers/log/onLogExpressionScopeFunction";
 import onLogProgramFiles from "./handlers/log/onLogProgramFiles";
 import onLogScriptContent from "./handlers/log/onLogScriptContent";
+import onLogSlots from "./handlers/log/onLogSlots";
 import onLogTypeAtCursor from "./handlers/log/onLogTypeAtCursor";
 
 import onCompletion from "./handlers/lsp/onCompletion";
@@ -31,8 +35,7 @@ import onCompletionResolve from "./handlers/lsp/onCompletionResolve";
 import onDefinition from "./handlers/lsp/onDefinition";
 import onHover from "./handlers/lsp/onHover";
 
-import RiotDeclarationDocumentsHandler from "./core/riot-documents/RiotDeclarationDocumentsHandler";
-
+import registerCustomHandlers from "./utils/registerCustomHandlers";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -68,33 +71,19 @@ connection.onHover(onHover);
 
 connection.onDefinition(onDefinition);
 
-connection.onRequest(
-    "custom/getContentTypeAtCursor",
-    onGetContentTypeAtCursor
-);
-connection.onRequest(
-    "custom/logCompiledComponent",
-    onLogCompiledComponent
-);
-connection.onRequest(
-    "custom/logContentTypeAtCursor",
-    onLogContentTypeAtCursor
-);
-connection.onRequest(
-    "custom/logDeclaration",
-    onLogDeclaration
-);
-connection.onRequest(
-    "custom/logProgramFiles",
-    onLogProgramFiles
-);
-connection.onRequest(
-    "custom/logScriptContent",
-    onLogScriptContent
-);
-connection.onRequest(
-    "custom/logTypeAtCursor",
-    onLogTypeAtCursor
+registerCustomHandlers(
+    connection,
+    [
+        onGetContentTypeAtCursor,
+        onLogCompiledComponent,
+        onLogContentTypeAtCursor,
+        onLogDeclaration,
+        onLogExpressionScopeFunction,
+        onLogProgramFiles,
+        onLogScriptContent,
+        onLogSlots,
+        onLogTypeAtCursor,
+    ]
 );
 
 connection.onShutdown(onShutdown);

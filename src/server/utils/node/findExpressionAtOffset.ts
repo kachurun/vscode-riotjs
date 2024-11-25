@@ -1,13 +1,22 @@
-import isOffsetInNode from "./isOffsetInNode";
+import ParserNode from "../riot-parser/ParserNode";
 
-import Expression from "../riot-parser/Expression";
+import findNodeAtOffset from "./findNodeAtOffset";
+import getAttributeAtOffset from "./getAttributeAtOffset";
+import getExpressionAtOffset from "./getExpressionAtOffset";
 
 export default function findExpressionAtOffset(
-    offset: number, expressions: Array<Expression>
+    offset: number, startingNode: ParserNode
 ) {
-    return expressions.find(expression => {
-        // `offset` should not be equal to `start`
-        // to ensure it is inside the brackets
-        return isOffsetInNode(offset, expression, false);
-    }) || null;
+    const node = findNodeAtOffset(offset, startingNode);
+
+    const attributeAtOffset = getAttributeAtOffset(offset, node);
+    if (attributeAtOffset != null) {
+        return getExpressionAtOffset(
+            offset, attributeAtOffset.expressions || []
+        );
+    }
+
+    return getExpressionAtOffset(
+        offset, node.expressions || []
+    );
 }
