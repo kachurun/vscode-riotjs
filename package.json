@@ -47,8 +47,32 @@
         "enablement": "editorTextFocus && editorLangId == riotjs"
       },
       {
+        "command": "riotjs.logCompiledComponent",
+        "title": "Log Compiled Component",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
         "command": "riotjs.logContentTypeAtCursor",
         "title": "Log Content Type at Cursor",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logExpressionScopeFunction",
+        "title": "Log Expression Scope Function",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logExternalDeclaration",
+        "title": "Log External Declaration",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logInternalDeclaration",
+        "title": "Log Internal Declaration",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       },
@@ -61,6 +85,12 @@
       {
         "command": "riotjs.logScriptContent",
         "title": "Log Script Content",
+        "category": "RiotJS",
+        "enablement": "editorLangId == riotjs"
+      },
+      {
+        "command": "riotjs.logSlots",
+        "title": "Log Slots",
         "category": "RiotJS",
         "enablement": "editorLangId == riotjs"
       },
@@ -89,11 +119,14 @@
   },
   "scripts": {
     "build": "npx --yes tsx build.ts",
+    "dev": "npx --yes tsx build.ts --watch",
     "package": "npm run build && npx --yes @vscode/vsce package --allow-missing-repository --skip-license"
   },
   "dependencies": {
+    "@riotjs/compiler": "^9.3.0",
     "@riotjs/parser": "^5.0.1",
-    "typescript": "^5.6.3",
+    "chokidar": "^4.0.1",
+    "typescript": "^5.7.2",
     "vscode-css-languageservice": "^6.3.1",
     "vscode-html-languageservice": "^5.3.1",
     "vscode-languageclient": "^9.0.1",
@@ -102,10 +135,11 @@
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
-    "@types/node": "^22.8.1",
+    "@types/node": "^22.9.3",
     "@types/vscode": "^1.82.0",
     "@vscode/vsce": "^3.2.1",
     "esbuild": "^0.24.0",
+    "riot": "^9.4.4",
     "tsx": "^4.19.2"
   },
   "files": [

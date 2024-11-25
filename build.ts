@@ -1,3 +1,4 @@
+import * as chokidar from "chokidar";
 import * as esbuild from "esbuild";
 import * as fs from "fs";
 import * as path from "path";
@@ -208,4 +209,59 @@ async function build() {
     }
 }
 
-build();
+
+async function watch() {
+    const builds: Array<Promise<void>> = [];
+    async function runBuild() {
+        let promiseResolve: () => void;
+        const promise = new Promise<void>(resolve => {
+            promiseResolve = resolve;
+        });
+        builds.unshift(promise);
+        if (builds.length > 1) {
+            await builds[1];
+        }
+        await build();
+        builds.pop();
+        promiseResolve!();
+    }
+    runBuild();
+    console.log("Watching for changes...");
+    const watcher = chokidar.watch("src", {
+        persistent: true,
+        ignoreInitial: true
+    });
+
+    const rebuild = async () => {
+        try {
+            await runBuild();
+        } catch (error) {
+            console.error("Error during rebuild:", error);
+        }
+    };
+
+    watcher
+        .on("add", (filePath) => {
+            console.log(`File added: ${filePath}`);
+            rebuild();
+        })
+        .on("change", (filePath) => {
+            console.log(`File changed: ${filePath}`);
+            rebuild();
+        })
+        .on("unlink", (filePath) => {
+            console.log(`File removed: ${filePath}`);
+            rebuild();
+        })
+        .on("error", (error) => {
+            console.error(`Watcher error: ${error}`);
+        });
+}
+
+// Determine if watch mode is enabled
+const isWatchMode = process.argv.includes("--watch");
+if (isWatchMode) {
+    watch();
+} else {
+    build();
+}

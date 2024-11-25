@@ -9,20 +9,33 @@ import { getCSSLanguageService } from "vscode-css-languageservice";
 
 import TypeScriptLanguageService from "../TypeScriptLanguageService";
 
-import onCompletion from "./onCompletion";
-import onCompletionResolve from "./onCompletionResolve";
-import onDefinition from "./onDefinition";
-import onDidDocumentChangeContent from "./OnDidDocumentChangeContent";
-import onGetContentTypeAtCursor from "./onGetContentTypeAtCursor";
-import onHover from "./onHover";
-import onInitialize from "./onInitialize";
-import onLogContentTypeAtCursor from "./onLogContentTypeAtCursor";
-import onLogProgramFiles from "./onLogProgramFiles";
-import onLogScriptContent from "./onLogScriptContent";
-import onLogTypeAtCursor from "./onLogTypeAtCursor";
-import onShutdown from "./onShutdown";
+import RiotDeclarationDocumentsHandler from "./core/riot-documents/RiotDeclarationDocumentsHandler";
 
-import { setState } from "./state";
+import { setState } from "./core/state";
+
+import onGetContentTypeAtCursor from "./handlers/custom/onGetContentTypeAtCursor";
+
+import onDidDocumentChangeContent from "./handlers/document/onDidDocumentChangeContent";
+import onDidDocumentClose from "./handlers/document/onDidDocumentClose";
+
+import onInitialize from "./handlers/initialization/onInitialize";
+import onShutdown from "./handlers/initialization/onShutdown";
+
+import onLogCompiledComponent from "./handlers/log/onLogCompiledComponent";
+import onLogContentTypeAtCursor from "./handlers/log/onLogContentTypeAtCursor";
+import onLogDeclaration from "./handlers/log/onLogDeclaration";
+import onLogExpressionScopeFunction from "./handlers/log/onLogExpressionScopeFunction";
+import onLogProgramFiles from "./handlers/log/onLogProgramFiles";
+import onLogScriptContent from "./handlers/log/onLogScriptContent";
+import onLogSlots from "./handlers/log/onLogSlots";
+import onLogTypeAtCursor from "./handlers/log/onLogTypeAtCursor";
+
+import onCompletion from "./handlers/lsp/onCompletion";
+import onCompletionResolve from "./handlers/lsp/onCompletionResolve";
+import onDefinition from "./handlers/lsp/onDefinition";
+import onHover from "./handlers/lsp/onHover";
+
+import registerCustomHandlers from "./utils/registerCustomHandlers";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -30,8 +43,13 @@ const documents = new TextDocuments(TextDocument);
 setState({
     connection,
     documents,
+    riotDocuments: new Map(),
 
-    tsLanguageService: new TypeScriptLanguageService(),
+    tsLanguageService: new TypeScriptLanguageService({
+        documentsHandlers: [
+            RiotDeclarationDocumentsHandler
+        ]
+    }),
     htmlLanguageService: getHTMLLanguageService(),
     cssLanguageService: getCSSLanguageService(),
 
@@ -43,6 +61,7 @@ setState({
 connection.onInitialize(onInitialize);
 
 documents.onDidChangeContent(onDidDocumentChangeContent);
+documents.onDidClose(onDidDocumentClose);
 
 connection.onCompletion(onCompletion);
 
@@ -52,25 +71,19 @@ connection.onHover(onHover);
 
 connection.onDefinition(onDefinition);
 
-connection.onRequest(
-    "custom/getContentTypeAtCursor",
-    onGetContentTypeAtCursor
-);
-connection.onRequest(
-    "custom/logContentTypeAtCursor",
-    onLogContentTypeAtCursor
-);
-connection.onRequest(
-    "custom/logProgramFiles",
-    onLogProgramFiles
-);
-connection.onRequest(
-    "custom/logScriptContent",
-    onLogScriptContent
-);
-connection.onRequest(
-    "custom/logTypeAtCursor",
-    onLogTypeAtCursor
+registerCustomHandlers(
+    connection,
+    [
+        onGetContentTypeAtCursor,
+        onLogCompiledComponent,
+        onLogContentTypeAtCursor,
+        onLogDeclaration,
+        onLogExpressionScopeFunction,
+        onLogProgramFiles,
+        onLogScriptContent,
+        onLogSlots,
+        onLogTypeAtCursor,
+    ]
 );
 
 connection.onShutdown(onShutdown);
